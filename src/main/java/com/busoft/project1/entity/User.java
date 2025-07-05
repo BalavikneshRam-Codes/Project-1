@@ -17,7 +17,7 @@ public class User extends BaseEntity{
     private String userLastName;
     private String userName;
     private String status;
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles", // Join table name
             joinColumns = @JoinColumn(name = "user_id"), // FK to user

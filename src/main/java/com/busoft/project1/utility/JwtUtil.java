@@ -56,5 +56,17 @@ public class JwtUtil {
                 .getExpiration();
         return expiration.before(new Date());
     }
+    public static Claims validateToken(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(Keys.hmacShaKeyFor(SECRET.getBytes())) // e.g. HMAC or RSA public key
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException e) {
+            throw new RuntimeException("Invalid or expired token", e);
+        }
+    }
+
 }
 

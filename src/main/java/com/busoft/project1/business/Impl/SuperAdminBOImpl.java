@@ -86,10 +86,12 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
         if (sortBy == null || sortBy.trim().isEmpty()) {
             sortBy = "createdIn";
         }
-        if (direction.equalsIgnoreCase("Desc"))
-            return Sort.by(Sort.Direction.DESC, sortBy);
-        else if (direction.equalsIgnoreCase("Asc"))
-            return Sort.by(Sort.Direction.ASC, sortBy);
+        if(direction != null) {
+            if (direction.equalsIgnoreCase("Desc"))
+                return Sort.by(Sort.Direction.DESC, sortBy);
+            else if (direction.equalsIgnoreCase("Asc"))
+                return Sort.by(Sort.Direction.ASC, sortBy);
+        }
         return Sort.by(Sort.Direction.DESC, sortBy);
     }
 

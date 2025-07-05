@@ -53,6 +53,21 @@ public class UserBOImpl implements IUserBO {
         return loginResponseVo;
     }
 
+    @Override
+    public LoginResponseVo refreshToken(LoginResponseVo responseVo) throws Exception {
+        try {
+            String userName = JwtUtil.extractUsername(responseVo.getRefreshToken());
+            User user = userRepository.findByUserEmailAndStatus(userName, UserStatusEnum.ACTIVE.getKey());
+            if (user == null)
+                throw new Exception("User not found");
+            responseVo.setAccessToken(generateAccessToken(user, getAccessTokenExpire()));
+            responseVo.setRefreshToken(generateAccessToken(user, getRefreshTokenExpire()));
+            return responseVo;
+        }catch (Exception e){
+            throw  e;
+        }
+    }
+
     private String generateAccessToken(User user, long tokenExpire) {
         List<String> roleNames = user.getRoles().stream()
                 .map(Role::getRoleName)

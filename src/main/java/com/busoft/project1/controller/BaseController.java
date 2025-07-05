@@ -51,6 +51,5 @@ public class BaseController {
     public void setLoginUserSession(LoginResponseVo userSessionVo, HttpServletRequest request){
         request.getSession().setAttribute("ACCESS_TOKEN",userSessionVo.getAccessToken());
         request.getSession().setAttribute("REFRESH_TOKEN",userSessionVo.getRefreshToken());
-        request.getSession().setAttribute("USER_FULL_NAME",userSessionVo.getUserFullName());
     }
 }
