@@ -3,9 +3,11 @@ package com.busoft.project1.business.Impl;
 import com.busoft.project1.business.ISuperAdminBO;
 import com.busoft.project1.entity.Company;
 import com.busoft.project1.repo.ICompanyRepository;
+import com.busoft.project1.vo.CommonFilterVo;
 import com.busoft.project1.vo.CommonVo;
 import com.busoft.project1.vo.CompaniesVo;
 import com.busoft.project1.vo.CompanyVo;
+import io.micrometer.common.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +22,7 @@ import java.util.List;
 public class SuperAdminBOImpl implements ISuperAdminBO {
     @Autowired
     private ICompanyRepository companyRepository;
+
     @Override
     public CommonVo createCompany(CompanyVo companyVo) {
         Company company = convertVoToEntity(companyVo);
@@ -29,13 +32,31 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
     }
 
     @Override
-    public CompaniesVo getAllCompanies(CompaniesVo companiesVo) {
-        Sort  sort = Sort.by(Sort.Direction.DESC,"createdIn");
-        Pageable pageable = PageRequest.of(0,10,sort);
-        Page<Company> companies = companyRepository.findAll(pageable);
-        return convertEntityToVoList(companies);
+    public CompaniesVo getAllCompanies(CommonFilterVo commonFilterVo) {
+        try {
+            Sort sort = sortDirection(commonFilterVo.getFilterVO().getDirection(),null);
+            Pageable pageable = PageRequest.of(commonFilterVo.getFilterVO().getPageNumber(), commonFilterVo.getFilterVO().getPageSize(), sort);
+            Page<Company> companies = companyRepository.findAll(pageable);
+            return convertEntityToVoList(companies);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw e;
+        }
     }
-    public CompaniesVo convertEntityToVoList(Page<Company> companies){
+
+    private Sort sortDirection(String direction,String sortBy) {
+        if (sortBy == null || sortBy.trim().isEmpty()) {
+            sortBy = "createdIn";
+        }
+
+        if (direction.equalsIgnoreCase("Desc"))
+            return Sort.by(Sort.Direction.DESC, sortBy);
+        else if (direction.equalsIgnoreCase("Asc"))
+            return Sort.by(Sort.Direction.ASC, sortBy);
+        return Sort.by(Sort.Direction.DESC, sortBy);
+    }
+
+    public CompaniesVo convertEntityToVoList(Page<Company> companies) {
         CompaniesVo companiesVo = new CompaniesVo();
         List<CompanyVo> companiesVos = new ArrayList<>();
         companies.forEach(company -> {
@@ -43,9 +64,11 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
             companiesVos.add(companyVo);
         });
         companiesVo.setCompanyVos(companiesVos);
+        companiesVo.setTotalRecords(companies.getTotalElements());
         return companiesVo;
     }
-    private CompanyVo convertEntityToVo(Company company){
+
+    private CompanyVo convertEntityToVo(Company company) {
         CompanyVo companyVo = new CompanyVo();
         companyVo.setCity(company.getCity());
         companyVo.setCompanyName(company.getCompanyName());
@@ -58,7 +81,8 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
         companyVo.setStatus(company.getStatus());
         return companyVo;
     }
-    private Company convertVoToEntity(CompanyVo companyVo){
+
+    private Company convertVoToEntity(CompanyVo companyVo) {
         Company company = new Company();
         company.setCity(companyVo.getCity());
         company.setCompanyName(companyVo.getCompanyName());

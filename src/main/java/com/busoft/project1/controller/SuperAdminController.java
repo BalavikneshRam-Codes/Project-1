@@ -33,7 +33,7 @@ public class SuperAdminController extends BaseController{
     public CompaniesVo getAllCompanies(@RequestBody CommonFilterVo commonFilterVo,HttpServletRequest servletRequest){
         CompaniesVo companyVos = null;
         try{
-            companyVos =(CompaniesVo) callingSuperAdminService(new CompaniesVo(), servletRequest, "getAllCompanies");
+            companyVos =(CompaniesVo) callingSuperAdminService(commonFilterVo, servletRequest, "getAllCompanies");
             companyVos.setStatus(StatusEnum.SUCCESS.getKey());
         } catch (Exception e) {
             companyVos = new CompaniesVo();

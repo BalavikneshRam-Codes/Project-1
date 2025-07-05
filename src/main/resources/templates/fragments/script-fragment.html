@@ -11,6 +11,30 @@
 
 
   <script>
+    function refreshTokenIfNeeded() {
+    const accessToken = getAccessToken();
+
+    if (!accessToken || isTokenExpired(accessToken)) {
+        return $.ajax({
+            url: '/refresh-token',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                refreshToken: getRefreshToken()
+            })
+        }).then(response => {
+            setAccessToken(response.accessToken);
+            setRefreshToken(response.refreshToken);
+            return response.accessToken;
+        }).catch(() => {
+            alert(" expired. Please login again.");
+            window.location.href = '/login';
+        });
+    } else {
+        return Promise.resolve(accessToken);
+    }
+}
+
     function getAccessToken() {
         return $('#accessToken').val();
     }

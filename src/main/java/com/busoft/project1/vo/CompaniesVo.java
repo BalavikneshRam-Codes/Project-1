@@ -4,6 +4,15 @@ import java.util.List;
 
 public class CompaniesVo extends BaseVo{
     private List<CompanyVo> companyVos;
+    private Long totalRecords;
+
+    public Long getTotalRecords() {
+        return totalRecords;
+    }
+
+    public void setTotalRecords(Long totalRecords) {
+        this.totalRecords = totalRecords;
+    }
 
     public List<CompanyVo> getCompanyVos() {
         return companyVos;
