@@ -252,7 +252,92 @@ $('#editCompanyForm').on('submit', function (e) {
 });
 
 function deleteCompany(company) {
-     deleteCompanyAPI(company.companyName);
+    showDeleteConfirmation(company);
+}
+function showDeleteConfirmation(company) {
+    const confirmationModal = `
+        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-danger text-white border-0" style="height:81px;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <h5 class="modal-title mb-0" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                        </div>
+                      <button type="button" class="btn text-white position-absolute"
+                                  data-bs-dismiss="modal"
+                                  aria-label="Close"
+                                  style="top: 23px; right: 37px; background: transparent; border: none;">
+                              <i class="bi bi-x-lg" style="font-size:25px;"></i>
+                          </button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="text-center mb-4">
+                            <div class="warning-icon mb-3">
+                                <i class="fas fa-trash-alt text-danger" style="font-size: 3rem;"></i>
+                            </div>
+                            <h6 class="mb-3">Are you sure you want to delete this company?</h6>
+                            <div class="company-info bg-light p-3 rounded mb-3">
+                                <div class="row">
+                                    <div class="col-12 text-center">
+                                        <strong class="text-primary">${company.companyName || 'N/A'}</strong>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-6">
+                                        <small class="text-muted">Domain:</small><br>
+                                        <span class="small">${company.subDomain || 'N/A'}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Status:</small><br>
+                                        <span class="badge ${company.status === 'Active' ? 'bg-success' : 'bg-danger'} small">
+                                            ${company.status || 'N/A'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="alert alert-warning d-flex align-items-center" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <small>This action cannot be undone. All associated data will be permanently deleted.</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light">
+                        <div class="d-flex justify-content-between w-100">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i>
+                                Cancel
+                            </button>
+                            <button type="button" class="btn btn-danger" id="confirmDeleteBtn" data-company-name="${company.companyName}">
+                                <i class="fas fa-trash me-1"></i>
+                                Yes, Delete Company
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Remove existing modal if present
+    $('#deleteConfirmationModal').remove();
+
+    // Add modal to body
+    $('body').append(confirmationModal);
+
+    // Show modal
+    $('#deleteConfirmationModal').modal('show');
+
+    // Handle confirm delete button click
+    $('#confirmDeleteBtn').on('click', function() {
+        const companyName = $(this).data('company-name');
+        confirmDeleteCompany(companyName);
+    });
+
+    // Clean up modal when hidden
+    $('#deleteConfirmationModal').on('hidden.bs.modal', function() {
+        $(this).remove();
+    });
 }
 
 function showLoadingIndicator() {
@@ -264,7 +349,83 @@ function hideLoadingIndicator() {
     $('.btn').prop('disabled', false);
     $('#loadingOverlay').remove();
 }
+function showDeleteLoadingState() {
+    const loadingModal = `
+        <div class="modal fade" id="deleteLoadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content border-0">
+                    <div class="modal-body text-center p-4">
+                        <div class="spinner-border text-danger mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h6 class="mb-2">Deleting Company...</h6>
+                        <p class="text-muted small mb-0">Please wait while we process your request.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(loadingModal);
+    $('#deleteLoadingModal').modal('show');
+}
+
+// Function to hide loading state using jQuery
+function hideDeleteLoadingState() {
+    $('#deleteLoadingModal').modal('hide');
+    setTimeout(function() {
+        $('#deleteLoadingModal').remove();
+    }, 300);
+}
+function showDeleteSuccessMessage(companyName) {
+    const successToast = `
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+                <div class="toast-header bg-success text-white">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong class="me-auto">Success</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    <strong>${companyName}</strong> has been successfully deleted.
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(successToast);
+
+    // Auto remove toast after 5 seconds
+    setTimeout(function() {
+        $('.toast-container').remove();
+    }, 5000);
+}
+function showDeleteErrorMessage(errorMessage) {
+    const errorToast = `
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="7000">
+                <div class="toast-header bg-danger text-white">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong class="me-auto">Error</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    <strong>Failed to delete company:</strong><br>
+                    <span class="text-muted">${errorMessage}</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(errorToast);
+
+    // Auto remove toast after 7 seconds
+    setTimeout(function() {
+        $('.toast-container').remove();
+    }, 7000);
+}
 function deleteCompanyAPI(companyName) {
+    $('#deleteConfirmationModal').modal('hide');
 
     showLoadingIndicator();
 
@@ -277,18 +438,14 @@ function deleteCompanyAPI(companyName) {
         }),
         success: function(response) {
             hideLoadingIndicator();
-
-            // Show success message
-            showSuccessMessage('Company deleted successfully!');
-
-            // Remove the company card from DOM or reload data
-            removeCompanyCard(companyName);
-            // Or reload the entire company list
-            // loadCompanies();
+             hideDeleteLoadingState();
+            showDeleteSuccessMessage(companyName);
+             loadCompanies();
         },
         error: function(xhr, status, error) {
-            hideLoadingIndicator();
-            showErrorMessage('Error deleting company: ' + (xhr.responseJSON?.message || error));
+            hideDeleteLoadingState();
+            const errorMessage = xhr.responseJSON?.message || error || 'An error occurred while deleting the company';
+            showDeleteErrorMessage(errorMessage);
         }
         });
   }
