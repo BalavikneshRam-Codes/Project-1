@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <div th:replace="fragments/head-fragment :: head"></div>
+
+    <title>SuperAdmin Login - Admin Dashboard</title>
+    <style>
+        .info-section {
+        border-left: 3px solid #0d6efd;
+        padding-left: 1rem;
+    }
+
+    .section-title {
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-item {
+        transition: all 0.2s ease;
+    }
+
+    .info-item:hover {
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        padding: 0.5rem;
+        margin: -0.5rem;
+    }
+
+    .info-value {
+        font-weight: 500;
+        color: #495057;
+        display: flex;
+        align-items: center;
+    }
+
+    .company-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 4px solid #0d6efd;
+    }
+
+    .stat-item {
+        padding: 0.5rem;
+        transition: transform 0.2s ease;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-2px);
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .modal-content {
+        border-radius: 10px;
+    }
+
+    .modal-header {
+        border-radius: 10px 10px 0 0;
+    }
+
+    .btn-close-white {
+        filter: brightness(0) invert(1);
+    }
+
+    .additional-info {
+        border: 1px solid #dee2e6;
+    }
+
+    @media (max-width: 768px) {
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+
+        .stat-item {
+            margin-bottom: 1rem;
+        }
+    }
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 11px;
+            border-radius: 8px;
+            margin: 5px 10px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: translateY(-2px);
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .company-card {
+            border-left: 4px solid #667eea;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .page-header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .modal {
+    display: none;
+    position: fixed;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    width: 800px;
+    max-width: 90%;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+  }
+
+  .modal-content .close {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  .modal-content label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+  }
+
+  .modal-content input,
+  .modal-content select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+
+  .modal-content button {
+    margin-top: 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 px-0">
+            <div class="sidebar">
+                <div class="p-4">
+                    <h4 class="text-white mb-4">
+                        <i class="fas fa-building me-2"></i>
+                        Company Hub
+                    </h4>
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#">
+                            <i class="fas fa-list me-2"></i>
+                            All Companies
+                        </a>
+                        <a class="nav-link [[${#httpServletRequest.requestURI == '/createCompany'} ? 'active' : '']]"
+                           th:href="@{/createCompany}">
+                            <i class="fas fa-plus me-2"></i>
+                            Create Company
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <div class="main-content p-4">
+
+                <!-- Company List View -->
+                <div id="listView" class="view-content">
+
+                    <!-- Search and Filter -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-search"></i>
+                                            </span>
+                                        <input type="text" class="form-control" placeholder="Search companies..." id="searchInput">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="statusFilter">
+                                        <option value="">All Status</option>
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 d-flex justify-content-between align-items-center mb-4">
+                                    <button class="btn btn-primary" onclick="loadCompanies()">
+                                        <i class="fas fa-refresh me-2"></i>Refresh
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="errorContainer"></div>
+                    <div id="editCompanyModal" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick="closeEditModal()">&times;</span>
+                            <h2>Edit Company</h2>
+                            <form id="editCompanyForm">
+                                <input type="hidden" name="subDomain" id="subDomain" />
+
+                                <label>Company Name</label>
+                                <input type="text" name="companyName" id="companyName" required />
+
+                                <label>Address</label>
+                                <input type="text" name="addressName" id="addressName" />
+
+                                <label>City</label>
+                                <input type="text" name="city" id="city" />
+
+                                <label>State</label>
+                                <input type="text" name="state" id="state" />
+
+                                <label>Country</label>
+                                <input type="text" name="country" id="country" />
+
+                                <label>Email</label>
+                                <input type="email" name="email" id="email" />
+
+                                <label>Phone</label>
+                                <input type="text" name="phone" id="phone" />
+
+                                <label>Status</label>
+                                <select name="status" id="status">
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+
+                                <button type="submit">Save</button>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- Companies Grid -->
+                    <div class="row" id="companiesGrid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:replace="fragments/script-fragment :: scripts"></div>
+<div th:replace="fragments/Token :: tokens"></div>
+<div th:replace="js/superAdminDashboard :: superAdminDashboard"></div>
+</body>
+</html>

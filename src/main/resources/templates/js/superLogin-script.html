@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+<th:block th:fragment="loginScript">
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#loginBtn').on('click', function (e) {
+                const username = $('#username').val().trim();
+                const password = $('#password').val();
+                const loginBtn = $(this);
+
+                // Validate input fields
+                if (!username || !password) {
+                    e.preventDefault();
+                    alert('Please fill in all fields');
+                    return;
+                }
+
+                // Add loading state to login button
+                loginBtn.html('<i class="bi bi-hourglass-split me-2"></i>Signing In...');
+                loginBtn.prop('disabled', true);
+
+                // Perform login API call
+                callApi({
+                    url: 'userAuthenticate',
+                    method: 'POST',
+                    data: {
+                        userName: username,
+                        password: password
+                    },
+                    successCallback: loginSuccessHandler,
+                    errorCallback: loginFailedHandler
+                });
+
+                // Success handler
+                function loginSuccessHandler(response) {
+                    if (response.status === 'SUCCESS') {
+                        window.location.href = "/" + response.reDirectPage;
+                        resetLoginButton();
+                    } else {
+                        showError(response.errorMessage || "Login failed. Please check your credentials.");
+                        resetLoginButton();
+                    }
+                }
+
+                // Error handler
+                function loginFailedHandler(xhr, status, error) {
+                    let message = "Server error. Please try again.";
+                    if (xhr.responseJSON && xhr.responseJSON.errorMessage) {
+                        message = xhr.responseJSON.errorMessage;
+                    }
+                    showError(message);
+                    resetLoginButton();
+                }
+
+                // Show error
+                function showError(message) {
+                    const errorMsg = $('#loginErrorMsg');
+                    errorMsg.text(message).removeClass('d-none');
+
+                    setTimeout(() => {
+                        errorMsg.fadeOut(500, () => errorMsg.addClass('d-none').show().text(""));
+                    }, 4000);
+                }
+
+                // Reset login button state
+                function resetLoginButton() {
+                    loginBtn.html('<i class="bi bi-box-arrow-in-right me-2"></i> Sign In');
+                    loginBtn.prop('disabled', false);
+                }
+            });
+
+            // Auto-hide Bootstrap alerts after 5 seconds
+            setTimeout(function () {
+                $('.alert').fadeTo(500, 0, function () {
+                    $(this).remove();
+                });
+            }, 5000);
+
+            // Password visibility toggle
+            $('#passwordToggle').on('click', function () {
+                const $passwordInput = $('#password');
+                const type = $passwordInput.attr('type') === 'password' ? 'text' : 'password';
+                $passwordInput.attr('type', type);
+                $(this).find('i').toggleClass('bi-eye bi-eye-slash');
+            });
+        });
+    </script>
+</th:block>
+
+</body>

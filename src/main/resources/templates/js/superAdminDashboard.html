@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+<th:block th:fragment="superAdminDashboard">
+  <script type="text/javascript">
+    $(document).ready(function() {
+      loadCompanies();
+
+    // Event listeners for search and filter
+    $('#searchInput').on('input', function() {
+        clearTimeout(window.searchTimeout);
+        window.searchTimeout = setTimeout(function() {
+            loadCompanies();
+        }, 300); // Debounce search to avoid too many API calls
+    });
+
+    $('#statusFilter').on('change', function() {
+        loadCompanies();
+    });
+});
+
+function loadCompanies() {
+    const accessToken = $('#accessToken').val();
+    const statusFilter = $('#statusFilter').val();
+    const searchQuery = $('#searchInput').val().trim();
+
+    $('#loadingSpinner').show();
+    $('#companiesGrid').empty();
+    $('#errorContainer').empty();
+
+    let requestData = {};
+
+    // Add status filter if selected and not "All Status"
+    if (statusFilter && statusFilter !== '' && statusFilter !== 'ALL') {
+        requestData.companyStatus = statusFilter;
+    }
+
+    // Add search query if provided
+    if (searchQuery && searchQuery.length > 0) {
+        requestData.companyName = searchQuery;
+    }
+
+    $.ajax({
+        url: '/api/getAllCompanies',
+        type: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + accessToken,
+            'Content-Type': 'application/json'
+        },
+        contentType: 'application/json', // This must match your @RequestBody
+        data: JSON.stringify(requestData), // Send both status filter and search as query parameters
+        success: function(response) {
+            $('#loadingSpinner').hide();
+
+            if (response.status === 'SUCCESS') {
+                if (response.companyVos && response.companyVos.length > 0) {
+                    renderCompanies(response.companyVos);
+                } else {
+                    showEmptyState();
+                }
+            } else {
+                showError(response.errorMessage || 'Failed to load companies');
+            }
+        },
+        error: function(xhr, status, error) {
+            $('#loadingSpinner').hide();
+            let errorMessage = 'Failed to load companies';
+
+            if (xhr.status === 401) {
+                errorMessage = 'Unauthorized. Please check your authentication token.';
+            } else if (xhr.status === 404) {
+                errorMessage = 'API endpoint not found.';
+            } else if (xhr.responseJSON && xhr.responseJSON.errorMessage) {
+                errorMessage = xhr.responseJSON.errorMessage;
+            }
+
+            showError(errorMessage);
+        }
+    });
+}
+
+function renderCompanies(companies) {
+    const companiesGrid = $('#companiesGrid');
+    companiesGrid.empty();
+
+    companies.forEach(function(company) {
+        const companyCard = createCompanyCard(company);
+        companiesGrid.append(companyCard);
+    });
+}
+
+  function createCompanyCard(company) {
+    // Determine status badge class and text
+    const statusClass = company.status === 'ACTIVE' ? 'bg-success' : 'bg-danger';
+    const statusText = company.status || 'Unknown';
+    // Format address
+    const fullAddress = [
+        company.addressName,
+        company.city,
+        company.state,
+        company.country
+    ].filter(Boolean).join(', ');
+    const cardId = `company-card-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    const cardHtml = `
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card company-card h-100" id="${cardId}" data-company='${JSON.stringify(company).replace(/'/g, "&#39;")}'>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title mb-0">${escapeHtml(company.companyName || 'Unnamed Company')}</h5>
+                        <span class="badge ${statusClass} status-badge">${escapeHtml(statusText)}</span>
+                    </div>
+                    ${company.subDomain ? `
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-globe me-1"></i>
+                            ${escapeHtml(company.subDomain)}
+                        </small>
+                    </div>
+                    ` : ''}
+                    ${fullAddress ? `
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-map-marker-alt me-1"></i>
+                            ${escapeHtml(fullAddress)}
+                        </small>
+                    </div>
+                    ` : ''}
+                    ${company.email ? `
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-envelope me-1"></i>
+                            ${escapeHtml(company.email)}
+                        </small>
+                    </div>
+                    ` : ''}
+                    ${company.phone ? `
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-phone me-1"></i>
+                            ${escapeHtml(company.phone)}
+                        </small>
+                    </div>
+                    ` : ''}
+                    <div class="d-flex gap-2">
+
+                    <!--'${escapeHtml(company.companyName)}'-->
+                        <button class="btn btn-outline-primary btn-sm" onclick="editCompany(getCompanyFromCard(this))">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteCompany(getCompanyFromCard(this))">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" onclick="viewCompany(getCompanyFromCard(this))">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    return cardHtml;
+}
+function getCompanyFromCard(buttonElement) {
+    const card = buttonElement.closest('.company-card');
+    const companyData = card.getAttribute('data-company');
+    return JSON.parse(companyData);
+}
+
+function showEmptyState() {
+    const emptyStateHtml = `
+        <div class="col-12">
+            <div class="empty-state">
+                <i class="fas fa-building"></i>
+                <h4>No Companies Found</h4>
+                <p class="mb-0">There are no companies to display at the moment.</p>
+            </div>
+        </div>
+    `;
+    $('#companiesGrid').html(emptyStateHtml);
+}
+
+function showError(message) {
+    const errorHtml = `
+        <div class="error-message">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${escapeHtml(message)}
+        </div>
+    `;
+    $('#errorContainer').html(errorHtml);
+}
+
+function escapeHtml(unsafe) {
+    if (unsafe == null) return '';
+    return unsafe
+        .toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function editCompany(company) {
+$('#companyName').val(company.companyName);
+  $('#subDomain').val(company.subDomain);
+  $('#addressName').val(company.addressName);
+  $('#city').val(company.city);
+  $('#state').val(company.state);
+  $('#country').val(company.country);
+  $('#email').val(company.email);
+  $('#phone').val(company.phone);
+  $('#status').val(company.status);
+
+  $('#editCompanyModal').css('display', 'flex');
+}
+function closeEditModal() {
+  $('#editCompanyModal').hide();
+}
+$('#editCompanyForm').on('submit', function (e) {
+  e.preventDefault();
+
+  const formData = {
+    companyName: $('#companyName').val(),
+    subDomain: $('#subDomain').val(),
+    addressName: $('#addressName').val(),
+    city: $('#city').val(),
+    state: $('#state').val(),
+    country: $('#country').val(),
+    email: $('#email').val(),
+    phone: $('#phone').val(),
+    status: $('#status').val()
+  };
+
+  $.ajax({
+    url: '/api/editCompany',
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify(formData),
+    success: function (res) {
+      alert("Company updated successfully.");
+      closeEditModal();
+      // Optional: refresh company list
+    },
+    error: function (err) {
+      alert("Error updating company.");
+      console.error(err);
+    }
+  });
+});
+
+function deleteCompany(company) {
+     deleteCompanyAPI(company.companyName);
+}
+
+function showLoadingIndicator() {
+    $('#loadingSpinner').show();
+    $('.btn').prop('disabled', true);
+}
+function hideLoadingIndicator() {
+    $('#loadingSpinner').hide();
+    $('.btn').prop('disabled', false);
+    $('#loadingOverlay').remove();
+}
+function deleteCompanyAPI(companyName) {
+
+    showLoadingIndicator();
+
+    $.ajax({
+        url: 'api/deleteCompany',
+        type: 'DELETE',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            companyName: companyName
+        }),
+        success: function(response) {
+            hideLoadingIndicator();
+
+            // Show success message
+            showSuccessMessage('Company deleted successfully!');
+
+            // Remove the company card from DOM or reload data
+            removeCompanyCard(companyName);
+            // Or reload the entire company list
+            // loadCompanies();
+        },
+        error: function(xhr, status, error) {
+            hideLoadingIndicator();
+            showErrorMessage('Error deleting company: ' + (xhr.responseJSON?.message || error));
+        }
+        });
+  }
+  function showErrorMessage(message) {
+    const alertHtml = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    $('#alertContainer').html(alertHtml);
+}
+function viewCompany(companyName) {
+  displayCompanyDetails(companyName);
+}
+    // Helper function to display company details in a modal
+function displayCompanyDetails(company) {
+    const modalContent = `
+        <div class="modal fade" id="viewCompanyModal" tabindex="-1" aria-labelledby="viewCompanyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header bg-primary text-white border-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-building me-2"></i>
+                        <h5 class="modal-title mb-0" id="viewCompanyModalLabel">Company Information</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Company Header -->
+                    <div class="company-header mb-4 p-3 bg-light rounded">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="text-primary mb-1">${company.companyName || 'N/A'}</h6>
+                                <p class="text-muted mb-0 small">
+                                    <i class="fas fa-globe me-1"></i>
+                                    ${company.subDomain || 'N/A'}
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <span class="badge ${company.status === 'Active' ? 'bg-success' : company.status === 'Inactive' ? 'bg-danger' : 'bg-warning'} px-3 py-2">
+                                    <i class="fas fa-circle me-1" style="font-size: 0.7em;"></i>
+                                    ${company.status || 'N/A'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Company Details -->
+                    <div class="row g-4">
+                        <!-- Contact Information -->
+                        <div class="col-md-6">
+                            <div class="info-section">
+                                <h6 class="section-title text-secondary mb-3">
+                                    <i class="fas fa-address-card me-2"></i>
+                                    Contact Information
+                                </h6>
+                                <div class="info-item mb-3">
+                                    <label class="form-label small text-muted mb-1">Email Address</label>
+                                    <div class="info-value">
+                                        <i class="fas fa-envelope text-primary me-2"></i>
+                                        <span>${company.email || 'Not provided'}</span>
+                                        ${company.email ? `<a href="mailto:${company.email}" class="ms-2 text-decoration-none small">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>` : ''}
+                                    </div>
+                                </div>
+                                <div class="info-item mb-3">
+                                    <label class="form-label small text-muted mb-1">Phone Number</label>
+                                    <div class="info-value">
+                                        <i class="fas fa-phone text-primary me-2"></i>
+                                        <span>${company.phone || 'Not provided'}</span>
+                                        ${company.phone ? `<a href="tel:${company.phone}" class="ms-2 text-decoration-none small">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location Information -->
+                        <div class="col-md-6">
+                            <div class="info-section">
+                                <h6 class="section-title text-secondary mb-3">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    Location Details
+                                </h6>
+                                <div class="info-item mb-3">
+                                    <label class="form-label small text-muted mb-1">Address</label>
+                                    <div class="info-value">
+                                        <i class="fas fa-map-pin text-primary me-2"></i>
+                                        <span>${company.addressName || 'Not provided'}</span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <div class="info-item mb-2">
+                                            <label class="form-label small text-muted mb-1">City</label>
+                                            <div class="info-value small">
+                                                <span>${company.city || 'N/A'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="info-item mb-2">
+                                            <label class="form-label small text-muted mb-1">State</label>
+                                            <div class="info-value small">
+                                                <span>${company.state || 'N/A'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="info-item mb-2">
+                                            <label class="form-label small text-muted mb-1">Country</label>
+                                            <div class="info-value small">
+                                                <span>${company.country || 'N/A'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Info Section -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="additional-info p-3 bg-light rounded">
+                                <div class="row text-center">
+                                    <div class="col-md-4">
+                                        <div class="stat-item">
+                                            <i class="fas fa-calendar-alt text-primary mb-2 d-block"></i>
+                                            <small class="text-muted">Created</small>
+                                            <div class="fw-bold">${company.createdDate || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="stat-item">
+                                            <i class="fas fa-edit text-primary mb-2 d-block"></i>
+                                            <small class="text-muted">Last Updated</small>
+                                            <div class="fw-bold">${company.updatedDate || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="stat-item">
+                                            <i class="fas fa-users text-primary mb-2 d-block"></i>
+                                            <small class="text-muted">Employees</small>
+                                            <div class="fw-bold">${company.employeeCount || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light">
+                    <div class="d-flex justify-content-between w-100">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="editCompany('${company.id}')">
+                                <i class="fas fa-edit me-1"></i>
+                                Edit
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="exportCompany('${company.id}')">
+                                <i class="fas fa-download me-1"></i>
+                                Export
+                            </button>
+                        </div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+
+    // Remove existing modal if any
+    const existingModal = document.getElementById('viewCompanyModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalContent);
+
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('viewCompanyModal'));
+    modal.show();
+}
+  </script>
+</th:block>

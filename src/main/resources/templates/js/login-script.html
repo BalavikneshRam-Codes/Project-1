@@ -1,0 +1,121 @@
+<!-- templates/fragments/login-script.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+<th:block th:fragment="loginScript">
+    <script type="text/javascript">
+        $(document).ready(function () {
+            const $loginForm = $('#loginForm');
+            const $loginBtn = $('#loginBtn');
+            const originalBtnText = $loginBtn.html();
+
+            // Password toggle
+            $('#passwordToggle').on('click', function () {
+                const $passwordInput = $('#password');
+                const type = $passwordInput.attr('type') === 'password' ? 'text' : 'password';
+                $passwordInput.attr('type', type);
+                $(this).find('i').toggleClass('bi-eye bi-eye-slash');
+            });
+
+            // Animate login container
+            const $loginContainer = $('.login-container');
+            if ($loginContainer.length) {
+                setTimeout(() => {
+                    $loginContainer.css({ opacity: '1', transform: 'translateY(0)' });
+                }, 100);
+            }
+
+            // Hide alerts
+            $('.alert').each(function () {
+                const $alert = $(this);
+                if (!$alert.hasClass('alert-danger')) {
+                    setTimeout(function () {
+                        $alert.css({ opacity: '0', transform: 'translateY(-20px)' });
+                        setTimeout(() => $alert.remove(), 300);
+                    }, 5000);
+                }
+            });
+
+            // Form enhancement
+            $('.form-control').on('focus', function () {
+                $(this).parent().addClass('focused');
+            }).on('blur', function () {
+                $(this).parent().removeClass('focused');
+                $(this).toggleClass('has-value', $(this).val().trim() !== '');
+            });
+
+            // Login logic
+            $loginBtn.on('click', function (e) {
+                e.preventDefault();
+                const username = $('#username').val().trim();
+                const password = $('#password').val().trim();
+
+                if (!username || !password) {
+                    alert("Please enter both username/email and password.");
+                    return;
+                }
+
+                $loginBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-2"></i>Signing In...');
+
+                $.ajax({
+                    url: 'userAuthenticate',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ userName: username, password: password }),
+                    success: function (response) {
+                        if (response.status === 'SUCCESS') {
+                            window.location.href = "/" + response.reDirectPage;
+                        } else {
+                            showError(response.errorMessage || "Login failed. Please check your credentials.");
+                        }
+                    },
+                    error: function (xhr) {
+                        let msg = "Server error. Please try again.";
+                        if (xhr.responseJSON && xhr.responseJSON.errorMessage) {
+                            msg = xhr.responseJSON.errorMessage;
+                        }
+                        showError(msg);
+                    },
+                    complete: function () {
+                        $loginBtn.prop('disabled', false).html(originalBtnText);
+                    }
+                });
+            });
+
+            // Show error message
+            function showError(message) {
+                const $errorMsg = $('#loginErrorMsg');
+                $errorMsg.text(message).removeClass("d-none");
+
+                setTimeout(() => {
+                    $errorMsg.addClass("d-none");
+                }, 4000);
+            }
+        });
+
+        // Global utility function (optional)
+        function showNotification(message, type = 'info') {
+            const icon = type === 'success' ? 'check-circle' :
+                         type === 'danger' ? 'exclamation-triangle' :
+                         'info-circle';
+
+            const $notification = $(`
+                <div class="alert alert-${type} position-fixed" style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                    <i class="bi bi-${icon} me-2"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `);
+
+            $('body').append($notification);
+
+            setTimeout(() => {
+                $notification.fadeOut(300, function () {
+                    $(this).remove();
+                });
+            }, 5000);
+        }
+    </script>
+</th:block>
+</body>
+</html>

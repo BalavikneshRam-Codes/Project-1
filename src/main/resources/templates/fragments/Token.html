@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<form th:fragment="tokens" class="hidden-form">
+  <input type="hidden" th:value="${session.ACCESS_TOKEN}" id="accessToken" name="accessToken">
+  <input type="hidden" th:value="${session.REFRESH_TOKEN}" id="refreshToken" name="refreshToken">
+</form>
+</html>

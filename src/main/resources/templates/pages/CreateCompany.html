@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <div th:replace="fragments/head-fragment :: head"></div>
+  <title>Create Company</title>
+
+  <style>
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 10px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    .step.active {
+        background-color: #007bff;
+        color: white;
+    }
+    .step.completed {
+        background-color: #28a745;
+        color: white;
+    }
+    .step-content {
+        display: none;
+        animation: fadeIn 0.5s ease-in;
+    }
+    .step-content.active {
+        display: block;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .form-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    .btn-custom {
+        min-width: 120px;
+    }
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    .success-message {
+        color: #28a745;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    .loading {
+        display: none;
+    }
+  </style>
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+  <div class="form-container">
+    <h2 class="text-center mb-4">Create New Company</h2>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+      <div class="step active" id="step1">1</div>
+      <div class="step" id="step2">2</div>
+      <div class="step" id="step3">3</div>
+    </div>
+
+    <!-- Step 1: Basic Information -->
+    <div class="step-content active" id="content1">
+      <h4 class="mb-3">Basic Information</h4>
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <label for="companyName" class="form-label">Company Name *</label>
+          <input type="text" class="form-control" id="companyName" placeholder="Enter company name">
+          <div class="error-message" id="companyNameError"></div>
+        </div>
+        <div class="col-md-12 mb-3">
+          <label for="subDomain" class="form-label">Sub Domain *</label>
+          <input type="text" class="form-control" id="subDomain" placeholder="Enter subdomain">
+          <div class="error-message" id="subDomainError"></div>
+        </div>
+        <div class="col-md-12 mb-3">
+          <label for="addressName" class="form-label">Address *</label>
+          <input type="text" class="form-control" id="addressName" placeholder="Enter address">
+          <div class="error-message" id="addressNameError"></div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end">
+        <button type="button" class="btn btn-primary btn-custom" data-step="1" data-action="next">
+          Next <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Location Information -->
+    <div class="step-content" id="content2">
+      <h4 class="mb-3">Location Information</h4>
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <label for="city" class="form-label">City *</label>
+          <input type="text" class="form-control" id="city" placeholder="Enter city">
+          <div class="error-message" id="cityError"></div>
+        </div>
+        <div class="col-md-12 mb-3">
+          <label for="state" class="form-label">State *</label>
+          <input type="text" class="form-control" id="state" placeholder="Enter state">
+          <div class="error-message" id="stateError"></div>
+        </div>
+        <div class="col-md-12 mb-3">
+          <label for="country" class="form-label">Country *</label>
+          <input type="text" class="form-control" id="country" placeholder="Enter country">
+          <div class="error-message" id="countryError"></div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary btn-custom" data-step="2" data-action="prev">
+          <i class="fas fa-arrow-left"></i> Previous
+        </button>
+        <button type="button" class="btn btn-primary btn-custom" data-step="2" data-action="next">
+          Next <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 3: Contact Information -->
+    <div class="step-content" id="content3">
+      <h4 class="mb-3">Contact Information</h4>
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <label for="email" class="form-label">Email *</label>
+          <input type="email" class="form-control" id="email" placeholder="Enter email address">
+          <div class="error-message" id="emailError"></div>
+        </div>
+        <div class="col-md-12 mb-3">
+          <label for="phone" class="form-label">Phone *</label>
+          <input type="tel" class="form-control" id="phone" placeholder="Enter phone number">
+          <div class="error-message" id="phoneError"></div>
+        </div>
+        <div class="col-md-12 mb-3">
+          <label for="status" class="form-label">Status *</label>
+          <select class="form-control" id="status">
+            <option value="">Select status</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+            <option value="PENDING">Pending</option>
+          </select>
+          <div class="error-message" id="statusError"></div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary btn-custom" data-step="3" data-action="prev">
+          <i class="fas fa-arrow-left"></i> Previous
+        </button>
+        <button type="button" class="btn btn-success btn-custom" data-action="submit">
+                        <span class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> Creating...
+                        </span>
+          <span class="submit-text">
+                            <i class="fas fa-check"></i> Create Company
+                        </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="alertContainer" class="mt-3"></div>
+  </div>
+</div>
+
+<div th:replace="fragments/script-fragment :: scripts"></div>
+<div th:replace="fragments/Token :: tokens"></div>
+<div th:replace="js/createCompany :: createCompany"></div>
+
+</body>
+</html>

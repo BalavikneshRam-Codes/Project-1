@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Scripts Fragment -->
+<div th:fragment="scripts">
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- jQuery (Optional - for additional interactions) -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+
+  <script>
+    function getAccessToken() {
+        return $('#accessToken').val();
+    }
+
+    function getRefreshToken() {
+        return $('#refreshToken').val();
+    }
+
+    function setAccessToken(token) {
+        $('#accessToken').val(token);
+    }
+
+    function setRefreshToken(token) {
+        $('#refreshToken').val(token);
+    }
+    function isTokenExpired(token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const expiry = payload.exp * 1000;
+            return Date.now() > expiry - 60 * 1000; // refresh if < 1 min left
+        } catch (e) {
+            return true;
+        }
+    }
+    function callApiWithAuth(settings) {
+        return refreshTokenIfNeeded().then(token => {
+            settings.headers = settings.headers || {};
+            settings.headers['Authorization'] = 'Bearer ' + token;
+            return $.ajax(settings);
+        });
+    }
+
+function callApi(params) {
+    refreshTokenIfNeeded().then((accessToken) => {
+        let ajaxOptions = {
+            url: params.url,
+            type: params.method || 'GET',
+            headers: params.headers || {},
+            success: function (response) {
+                if (typeof params.successCallback === 'function') {
+                    params.successCallback(response);
+                }
+            },
+            error: function (xhr, status, error) {
+                if (typeof params.errorCallback === 'function') {
+                    params.errorCallback(xhr, status, error);
+                } else {
+                    console.error("API Error:", error);
+                }
+            }
+        };
+
+        // Inject the access token into the headers
+        ajaxOptions.headers['Authorization'] = 'Bearer ' + accessToken;
+
+        if (params.contentType === 'multipart/form-data') {
+            const formData = new FormData();
+            for (const key in params.data) {
+                formData.append(key, params.data[key]);
+            }
+            ajaxOptions.data = formData;
+            ajaxOptions.processData = false;
+            ajaxOptions.contentType = false;
+        } else {
+            ajaxOptions.contentType = 'application/json';
+            ajaxOptions.data = JSON.stringify(params.data || {});
+        }
+
+        $.ajax(ajaxOptions);
+    });
+}
+
+
+
+  </script>
+
+</div>
+</body>
+</html>

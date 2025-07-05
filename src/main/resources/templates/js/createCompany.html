@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+<th:block th:fragment="createCompany">
+  <script type="text/javascript">
+    $(document).ready(function() {
+      let currentStep = 1;
+      const totalSteps = 3;
+
+      // Validation rules
+      const validationRules = {
+          companyName: { required: true, minLength: 2 },
+          subDomain: { required: true, minLength: 3, pattern: /^[a-zA-Z0-9-]+$/ },
+          addressName: { required: true, minLength: 5 },
+          city: { required: true, minLength: 2 },
+          state: { required: true, minLength: 2 },
+          country: { required: true, minLength: 2 },
+          email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
+          phone: { required: true, pattern: /^[+]?[\d\s\-\(\)]+$/, minLength: 10 },
+          status: { required: true }
+      };
+
+      function validateField(fieldName, value) {
+          const rules = validationRules[fieldName];
+          const $errorElement = $('#' + fieldName + 'Error');
+
+          if (rules.required && (!value || $.trim(value) === '')) {
+              $errorElement.text('This field is required');
+              return false;
+          }
+
+          if (rules.minLength && value.length < rules.minLength) {
+              $errorElement.text(`Minimum ${rules.minLength} characters required`);
+              return false;
+          }
+
+          if (rules.pattern && !rules.pattern.test(value)) {
+              if (fieldName === 'email') {
+                  $errorElement.text('Please enter a valid email address');
+              } else if (fieldName === 'phone') {
+                  $errorElement.text('Please enter a valid phone number');
+              } else if (fieldName === 'subDomain') {
+                  $errorElement.text('Only letters, numbers, and hyphens allowed');
+              } else {
+                  $errorElement.text('Invalid format');
+              }
+              return false;
+          }
+
+          $errorElement.text('');
+          return true;
+      }
+
+      function validateStep(step) {
+          let isValid = true;
+          const stepFields = getStepFields(step);
+
+          $.each(stepFields, function(index, fieldName) {
+              const fieldValue = $('#' + fieldName).val();
+              if (!validateField(fieldName, fieldValue)) {
+                  isValid = false;
+              }
+          });
+
+          return isValid;
+      }
+
+      function getStepFields(step) {
+          switch(step) {
+              case 1: return ['companyName', 'subDomain', 'addressName'];
+              case 2: return ['city', 'state', 'country'];
+              case 3: return ['email', 'phone', 'status'];
+              default: return [];
+          }
+      }
+
+      function nextStep(step) {
+          if (validateStep(step)) {
+              updateStepIndicator(step, 'completed');
+              currentStep++;
+              updateStepIndicator(currentStep, 'active');
+              showStep(currentStep);
+          }
+      }
+
+      function prevStep(step) {
+          updateStepIndicator(step, '');
+          currentStep--;
+          updateStepIndicator(currentStep, 'active');
+          showStep(currentStep);
+      }
+
+      function showStep(step) {
+          // Hide all steps
+          for (let i = 1; i <= totalSteps; i++) {
+              $('#content' + i).removeClass('active');
+          }
+          // Show current step
+          $('#content' + step).addClass('active');
+      }
+
+      function updateStepIndicator(step, status) {
+          const $stepElement = $('#step' + step);
+          $stepElement.removeClass('active completed');
+          if (status) {
+              $stepElement.addClass(status);
+          }
+      }
+
+      function showAlert(message, type = 'success') {
+          const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+          const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+          $('#alertContainer').html(`
+              <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                  <i class="fas ${iconClass} me-2"></i>
+                  ${message}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+          `);
+      }
+
+      function collectFormData() {
+          return {
+              companyName: $.trim($('#companyName').val()),
+              subDomain: $.trim($('#subDomain').val()),
+              addressName: $.trim($('#addressName').val()),
+              city: $.trim($('#city').val()),
+              state: $.trim($('#state').val()),
+              country: $.trim($('#country').val()),
+              email: $.trim($('#email').val()),
+              phone: $.trim($('#phone').val()),
+              status: $('#status').val()
+          };
+      }
+
+      function submitForm() {
+          if (!validateStep(3)) {
+              return;
+          }
+
+          const $submitButton = $('.btn-success');
+          const $loadingSpan = $submitButton.find('.loading');
+          const $submitSpan = $submitButton.find('.submit-text');
+
+          // Show loading state
+          $loadingSpan.show();
+          $submitSpan.hide();
+          $submitButton.prop('disabled', true);
+
+          const formData = collectFormData();
+          const accessToken = $('#accessToken').val();
+
+
+          const ajaxSettings = {
+              url: '/api/createCompany',
+              method: 'POST',
+              contentType: 'application/json',
+               headers: {
+                  'Authorization': 'Bearer ' + accessToken
+              },
+              data: JSON.stringify(formData),
+              success: function(result) {
+                  showAlert('Company created successfully!', 'success');
+
+                  // Optional: Redirect after success
+                  setTimeout(function() {
+                      window.location.href = '/superAdminDashboard';
+                  }, 2000);
+              },
+              error: function(xhr, status, error) {
+                  let errorMessage = 'Failed to create company. Please try again.';
+
+                  if (xhr.responseJSON && xhr.responseJSON.message) {
+                      errorMessage = xhr.responseJSON.message;
+                  } else if (xhr.status === 0) {
+                      errorMessage = 'Network error. Please check your connection and try again.';
+                  }
+
+                  showAlert(errorMessage, 'error');
+              },
+              complete: function() {
+                  // Hide loading state
+                  $loadingSpan.hide();
+                  $submitSpan.show();
+                  $submitButton.prop('disabled', false);
+              }
+          };
+          $.ajax(ajaxSettings);
+      }
+
+
+      // Button click handlers
+      $(document).on('click', 'button[data-action]', function() {
+          const action = $(this).data('action');
+          const step = $(this).data('step');
+
+          if (action === 'next') {
+              nextStep(step);
+          } else if (action === 'prev') {
+              prevStep(step);
+          } else if (action === 'submit') {
+              submitForm();
+          }
+      });
+
+      // Real-time validation
+      $.each(validationRules, function(fieldName, rules) {
+          const $field = $('#' + fieldName);
+          if ($field.length) {
+              // Validate on blur
+              $field.on('blur', function() {
+                  validateField(fieldName, $(this).val());
+              });
+
+              // Clear error message while typing (with delay)
+              $field.on('input', function() {
+                  const $errorElement = $('#' + fieldName + 'Error');
+                  if ($errorElement.text().length > 0) {
+                      const currentValue = $(this).val();
+                      setTimeout(function() {
+                          validateField(fieldName, currentValue);
+                      }, 500);
+                  }
+              });
+          }
+      });
+  });
+  </script>
+</th:block>
+</body>
