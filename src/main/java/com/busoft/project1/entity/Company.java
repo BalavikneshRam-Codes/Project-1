@@ -19,6 +19,15 @@ public class Company extends BaseEntity{
     private String email;
     private String phone;
     private String status;
+    private String profilePic;
+
+    public String getProfilePic() {
+        return profilePic;
+    }
+
+    public void setProfilePic(String profilePic) {
+        this.profilePic = profilePic;
+    }
 
     public Long getCompanyId() {
         return companyId;

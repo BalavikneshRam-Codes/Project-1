@@ -733,99 +733,158 @@
                         </div>
                     </div>
                     <div id="errorContainer"></div>
-                    <div id="editCompanyModal" class="modal">
-                        <div class="modal-content">
-                            <div class="modal-header" style="position: relative;">
-                                <h2 class="modal-title">Edit Company</h2>
-                                <button class="close-btn" onclick="closeEditModal()" type="button">&times;</button>
+                    <div class="container mt-4">
+                        <!-- Button to trigger modal -->
+
+                        <!-- Edit Company Modal -->
+                        <div class="modal fade" id="editCompanyModal" tabindex="-1" aria-labelledby="editCompanyModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title" id="editCompanyModalLabel">
+                                            <i class="fas fa-building me-2"></i>Edit Company
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <!-- Success Message -->
+                                        <div id="successMessage" class="alert alert-success alert-dismissible fade show" style="display: none;">
+                                            <i class="fas fa-check-circle me-2"></i>Company updated successfully!
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
+
+                                        <!-- Form -->
+                                        <form id="editCompanyForm">
+                                            <div class="row">
+                                                <!-- Company Name -->
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="companyName" class="form-label">
+                                                        <i class="fas fa-building me-1"></i>Company Name *
+                                                    </label>
+                                                    <input type="text" class="form-control" id="companyName" required>
+                                                    <div class="invalid-feedback">
+                                                        Please provide a valid company name.
+                                                    </div>
+                                                </div>
+
+                                                <!-- Subdomain -->
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="subDomain" class="form-label">
+                                                        <i class="fas fa-link me-1"></i>Subdomain *
+                                                    </label>
+                                                    <input type="text" class="form-control" id="subDomain" required>
+                                                    <div class="invalid-feedback">
+                                                        Please provide a valid subdomain.
+                                                    </div>
+                                                </div>
+
+                                                <!-- Profile Picture -->
+                                                <div class="col-12 mb-3">
+                                                    <label for="profilePic" class="form-label">
+                                                        <i class="fas fa-image me-1"></i>Profile Picture
+                                                    </label>
+                                                    <input type="file" class="form-control" id="profilePic" accept="image/*">
+                                                    <div class="form-text">Upload a company logo or profile picture (optional)</div>
+                                                </div>
+
+                                                <!-- Address Name -->
+                                                <div class="col-12 mb-3">
+                                                    <label for="addressName" class="form-label">
+                                                        <i class="fas fa-map-marker-alt me-1"></i>Address *
+                                                    </label>
+                                                    <input type="text" class="form-control" id="addressName" required>
+                                                    <div class="invalid-feedback">
+                                                        Please provide a valid address.
+                                                    </div>
+                                                </div>
+
+                                                <!-- City -->
+                                                <div class="col-md-4 mb-3">
+                                                    <label for="city" class="form-label">
+                                                        <i class="fas fa-city me-1"></i>City *
+                                                    </label>
+                                                    <input type="text" class="form-control" id="city" required>
+                                                    <div class="invalid-feedback">
+                                                        Please provide a valid city.
+                                                    </div>
+                                                </div>
+
+                                                <!-- State -->
+                                                <div class="col-md-4 mb-3">
+                                                    <label for="state" class="form-label">
+                                                        <i class="fas fa-flag me-1"></i>State *
+                                                    </label>
+                                                    <input type="text" class="form-control" id="state" required>
+                                                    <div class="invalid-feedback">
+                                                        Please provide a valid state.
+                                                    </div>
+                                                </div>
+
+                                                <!-- Country -->
+                                                <div class="col-md-4 mb-3">
+                                                    <label for="country" class="form-label">
+                                                        <i class="fas fa-globe me-1"></i>Country *
+                                                    </label>
+                                                    <input type="text" class="form-control" id="country" required>
+                                                    <div class="invalid-feedback">
+                                                        Please provide a valid country.
+                                                    </div>
+                                                </div>
+
+                                                <!-- Email -->
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="email" class="form-label">
+                                                        <i class="fas fa-envelope me-1"></i>Email *
+                                                    </label>
+                                                    <input type="email" class="form-control" id="email" required>
+                                                    <div class="invalid-feedback">
+                                                        Please provide a valid email address.
+                                                    </div>
+                                                </div>
+
+                                                <!-- Phone -->
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="phone" class="form-label">
+                                                        <i class="fas fa-phone me-1"></i>Phone *
+                                                    </label>
+                                                    <input type="tel" class="form-control" id="phone" required>
+                                                    <div class="invalid-feedback">
+                                                        Please provide a valid phone number.
+                                                    </div>
+                                                </div>
+
+                                                <!-- Status -->
+                                                <div class="col-12 mb-3">
+                                                    <label for="status" class="form-label">
+                                                        <i class="fas fa-toggle-on me-1"></i>Status *
+                                                    </label>
+                                                    <select class="form-select" id="status" required>
+                                                        <option value="">Select Status</option>
+                                                        <option value="active">Active</option>
+                                                        <option value="inactive">Inactive</option>
+                                                        <option value="pending">Pending</option>
+                                                    </select>
+                                                    <div class="invalid-feedback">
+                                                        Please select a valid status.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            <i class="fas fa-times me-2"></i>Cancel
+                                        </button>
+                                        <button type="submit" form="editCompanyForm" class="btn btn-primary" id="saveButton">
+                                            <span class="loading-spinner spinner-border spinner-border-sm me-2" style="display: none;"></span>
+                                            <i class="fas fa-save me-2"></i>Update Company
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-
-                            <form id="editCompanyForm">
-                                <div class="modal-body">
-                                    <div class="success-message" id="successMessage">
-                                        Company updated successfully!
-                                    </div>
-
-                                    <div class="company-info">
-                                        <h3>Company Information</h3>
-                                        <p>Update the company details below. All fields marked with * are required.</p>
-                                    </div>
-
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label for="companyName" class="form-label">Company Name *</label>
-                                            <input type="text" id="companyName" class="form-input" required>
-                                            <div class="error-message">Company name is required</div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="subDomain" class="form-label">Sub Domain *</label>
-                                            <input type="text" id="subDomain" class="form-input" required>
-                                            <div class="error-message">Sub domain is required</div>
-                                        </div>
-
-                                        <div class="form-group full-width">
-                                            <label for="addressName" class="form-label">Address *</label>
-                                            <input type="text" id="addressName" class="form-input" required>
-                                            <div class="error-message">Address is required</div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="city" class="form-label">City *</label>
-                                            <input type="text" id="city" class="form-input" required>
-                                            <div class="error-message">City is required</div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="state" class="form-label">State *</label>
-                                            <input type="text" id="state" class="form-input" required>
-                                            <div class="error-message">State is required</div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="country" class="form-label">Country *</label>
-                                            <input type="text" id="country" class="form-input" required>
-                                            <div class="error-message">Country is required</div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="email" class="form-label">Email *</label>
-                                            <input type="email" id="email" class="form-input" required>
-                                            <div class="error-message">Valid email is required</div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="phone" class="form-label">Phone *</label>
-                                            <input type="tel" id="phone" class="form-input" required>
-                                            <div class="error-message">Phone number is required</div>
-                                        </div>
-
-                                        <div class="form-group status-select">
-                                            <label for="status" class="form-label">Status *</label>
-                                            <select id="status" class="form-select" required>
-                                                <option value="">Select Status</option>
-                                                <option value="ACTIVE">Active</option>
-                                                <option value="INACTIVE">Inactive</option>
-                                                <option value="PENDING">Pending</option>
-                                                <option value="SUSPENDED">Suspended</option>
-                                            </select>
-                                            <div class="error-message">Status is required</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="modal-footer">
-                                    <button type="button" class="btn-edit btn-secondary" onclick="closeEditModal()">
-                                        Cancel
-                                    </button>
-                                    <button type="submit" class="btn-edit btn-primary" id="saveButton">
-                                        <span class="loading-spinner"></span>
-                                        Update Company
-                                    </button>
-                                </div>
-                            </form>
                         </div>
                     </div>
+
                     <!-- Companies Grid -->
                     <div class="row" id="companiesGrid"></div>
                     <div id="loadingIndicator" class="loading" style="display: none;">

@@ -10,4 +10,6 @@ public interface ISuperAdminBO {
     BaseVo deleteCompany(CompanyVo baseVo);
 
     BaseVo editCompany(CompanyVo baseVo);
+
+    BaseVo editCompanyWithProfile(CompanyVo baseVo);
 }

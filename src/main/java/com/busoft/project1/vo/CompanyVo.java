@@ -1,5 +1,7 @@
 package com.busoft.project1.vo;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class CompanyVo extends BaseVo{
     private String companyName;
     private String subDomain;
@@ -10,6 +12,24 @@ public class CompanyVo extends BaseVo{
     private String email;
     private String phone;
     private String status;
+    private MultipartFile profilePic;
+    private String profilePicURL;
+
+    public MultipartFile getProfilePic() {
+        return profilePic;
+    }
+
+    public void setProfilePic(MultipartFile profilePic) {
+        this.profilePic = profilePic;
+    }
+
+    public String getProfilePicURL() {
+        return profilePicURL;
+    }
+
+    public void setProfilePicURL(String profilePicURL) {
+        this.profilePicURL = profilePicURL;
+    }
 
     public String getCompanyName() {
         return companyName;

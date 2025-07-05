@@ -5,6 +5,8 @@ import com.busoft.project1.vo.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.util.Collections;
 import java.util.List;
@@ -65,5 +67,29 @@ public class SuperAdminController extends BaseController{
             BaseVo.setErrorMessage(e.getMessage());
         }
         return BaseVo;
+    }
+    @PostMapping("/editCompanyWithProfile")
+    public BaseVo editCompanyWithProfile(MultipartHttpServletRequest request, HttpServletRequest servletRequest){
+        BaseVo baseVo = null;
+        try{
+            CompanyVo companyVo = new CompanyVo();
+            companyVo.setCompanyName(request.getParameter("companyName"));
+            companyVo.setSubDomain(request.getParameter("subDomain"));
+            companyVo.setAddressName(request.getParameter("addressName"));
+            companyVo.setCity(request.getParameter("city"));
+            companyVo.setState(request.getParameter("state"));
+            companyVo.setCountry(request.getParameter("country"));
+            companyVo.setEmail(request.getParameter("email"));
+            companyVo.setPhone(request.getParameter("phone"));
+            companyVo.setStatus(request.getParameter("status"));
+            companyVo.setProfilePic(request.getFile("profilePic"));
+            baseVo =(BaseVo) callingSuperAdminService(companyVo, servletRequest, "editCompanyWithProfile");
+            baseVo.setStatus(StatusEnum.SUCCESS.getKey());
+        } catch (Exception e) {
+            baseVo = new BaseVo();
+            baseVo.setStatus(StatusEnum.FAILED.getKey());
+            baseVo.setErrorMessage(e.getMessage());
+        }
+        return baseVo;
     }
 }

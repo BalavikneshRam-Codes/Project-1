@@ -198,62 +198,67 @@
             company.country
         ].filter(Boolean).join(', ');
         const cardId = `company-card-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
         const cardHtml = `
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card company-card h-100" id="${cardId}" data-company='${JSON.stringify(company).replace(/'/g, "&#39;")}'>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <h5 class="card-title mb-0">${escapeHtml(company.companyName || 'Unnamed Company')}</h5>
-                            <span class="badge ${statusClass} status-badge">${escapeHtml(statusText)}</span>
-                        </div>
-                        ${company.subDomain ? `
-                        <div class="mb-3">
-                            <small class="text-muted">
-                                <i class="fas fa-globe me-1"></i>
-                                ${escapeHtml(company.subDomain)}
-                            </small>
-                        </div>
-                        ` : ''}
-                        ${fullAddress ? `
-                        <div class="mb-2">
-                            <small class="text-muted">
-                                <i class="fas fa-map-marker-alt me-1"></i>
-                                ${escapeHtml(fullAddress)}
-                            </small>
-                        </div>
-                        ` : ''}
-                        ${company.email ? `
-                        <div class="mb-2">
-                            <small class="text-muted">
-                                <i class="fas fa-envelope me-1"></i>
-                                ${escapeHtml(company.email)}
-                            </small>
-                        </div>
-                        ` : ''}
-                        ${company.phone ? `
-                        <div class="mb-3">
-                            <small class="text-muted">
-                                <i class="fas fa-phone me-1"></i>
-                                ${escapeHtml(company.phone)}
-                            </small>
-                        </div>
-                        ` : ''}
-                        <div class="d-flex gap-2">
-
-                            <button class="btn btn-outline-primary btn-sm" onclick="editCompany(getCompanyFromCard(this))">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-outline-danger btn-sm" onclick="deleteCompany(getCompanyFromCard(this))">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            <button class="btn btn-outline-info btn-sm" onclick="viewCompany(getCompanyFromCard(this))">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
+    <div class="card company-card h-100" id="${cardId}" data-company='${JSON.stringify(company).replace(/'/g, "&#39;")}'>
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="d-flex align-items-center">
+                    <img src="${company.profilePicURL ? escapeHtml(company.profilePicURL) : 'https://placehold.co/600x400'}"
+                         alt="Company Logo"
+                         class="rounded-circle me-3"
+                         style="width: 50px; height: 50px; object-fit: cover;"
+                         onerror="this.src='https://via.placeholder.com/50x50/6c757d/ffffff?text=C'">
+                    <h5 class="card-title mb-0">${escapeHtml(company.companyName || 'Unnamed Company')}</h5>
                 </div>
+                <span class="badge ${statusClass} status-badge">${escapeHtml(statusText)}</span>
             </div>
+            ${company.subDomain ? `
+            <div class="mb-3">
+                <small class="text-muted">
+                    <i class="fas fa-globe me-1"></i>
+                    ${escapeHtml(company.subDomain)}
+                </small>
+            </div>
+            ` : ''}
+            ${fullAddress ? `
+            <div class="mb-2">
+                <small class="text-muted">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    ${escapeHtml(fullAddress)}
+                </small>
+            </div>
+            ` : ''}
+            ${company.email ? `
+            <div class="mb-2">
+                <small class="text-muted">
+                    <i class="fas fa-envelope me-1"></i>
+                    ${escapeHtml(company.email)}
+                </small>
+            </div>
+            ` : ''}
+            ${company.phone ? `
+            <div class="mb-3">
+                <small class="text-muted">
+                    <i class="fas fa-phone me-1"></i>
+                    ${escapeHtml(company.phone)}
+                </small>
+            </div>
+            ` : ''}
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" onclick="editCompany(getCompanyFromCard(this))" data-bs-target="#editCompanyModal">
+                    <i class="fas fa-edit "></i>
+                 </button>
+                <button class="btn btn-outline-danger btn-sm" onclick="deleteCompany(getCompanyFromCard(this))">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button class="btn btn-outline-info btn-sm" onclick="viewCompany(getCompanyFromCard(this))">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
         `;
 
         return cardHtml;
@@ -299,7 +304,7 @@
      }
 
      function editCompany(company) {
-                 resetForm();
+            resetForm();
             $('#companyName').val(company.companyName);
             $('#subDomain').val(company.subDomain);
             $('#addressName').val(company.addressName);
@@ -308,19 +313,11 @@
             $('#country').val(company.country);
             $('#email').val(company.email);
             $('#phone').val(company.phone);
-            $('#status').val(company.status);
-
-            // Show modal with animation
-            $('#editCompanyModal').css('display', 'flex');
-
-            // Focus on first input
+            $('#status').val(company.status.toLowerCase());
             setTimeout(() => {
                 $('#companyName').focus();
             }, 400);
 
-     }
-     function closeEditModal() {
-      $('#editCompanyModal').hide();
      }
      function resetForm() {
             $('#editCompanyForm')[0].reset();
@@ -330,6 +327,9 @@
             $('.loading-spinner').hide();
             $('#saveButton').text('Update Company');
         }
+     function closeEditModal() {
+      $('#editCompanyModal').hide();
+     }
         function validateForm() {
             let isValid = true;
             const requiredFields = ['companyName', 'subDomain', 'addressName', 'city', 'state', 'country', 'email', 'phone', 'status'];
@@ -367,50 +367,104 @@
              $('#saveButton').prop('disabled', true);
             $('.loading-spinner').show();
             $('#saveButton').text('Updating...');
-      const formData = {
-        companyName: $('#companyName').val().trim(),
-                subDomain: $('#subDomain').val().trim(),
-                addressName: $('#addressName').val().trim(),
-                city: $('#city').val().trim(),
-                state: $('#state').val().trim(),
-                country: $('#country').val().trim(),
-                email: $('#email').val().trim(),
-                phone: $('#phone').val().trim(),
-                status: $('#status').val()
-      };
+            const profilePicFile = document.getElementById('profilePic').files[0];
+            if (!profilePicFile) {
+                        $.ajax({
+                            url: '/api/editCompany',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            headers: {
+                                'Authorization': 'Bearer ' + getAccessToken()
+                            },
+                            data: JSON.stringify({
+                                companyName: $('#companyName').val().trim(),
+                                subDomain: $('#subDomain').val().trim(),
+                                addressName: $('#addressName').val().trim(),
+                                city: $('#city').val().trim(),
+                                state: $('#state').val().trim(),
+                                country: $('#country').val().trim(),
+                                email: $('#email').val().trim(),
+                                phone: $('#phone').val().trim(),
+                                status: $('#status').val()
+                            }),
+                           success: function (response) {
+                                 $('#editCompanyModal').modal('hide');
+                                const $successMsg = $('#successMessage');
+                                $successMsg.fadeIn(200);
+                                setTimeout(() => {
+                                    $successMsg.fadeOut(300, function () {
+                                        $('body').removeClass('no-scroll');
+                                        $successMsg.removeClass('show');
+                                    });
+                                    closeEditModal();
+                                    if (typeof loadCompanies === 'function') {
+                                        loadCompanies();
+                                    }
+                                }, 1500);
+                                closeEditModal();
+                            }
+,
+                            error: function (xhr) {
 
-      $.ajax({
-        url: '/api/editCompany',
-        type: 'POST',
-        contentType: 'application/json',
-        headers: {
-                'Authorization': 'Bearer ' + getAccessToken(),
-                'Content-Type': 'application/json'
-          },
-        data: JSON.stringify(formData),
-        success: function (res) {
-          $('#successMessage').show();
-                    setTimeout(() => {
-                        closeEditModal();
-                        if (typeof loadCompanies === 'function') {
-                            loadCompanies();
-                        }
-                    }, 1500);
-        },
-        error: function (err) {
-        let errorMessage = 'An error occurred while updating the company.';
+                            },
+                            complete: function() {
+                                        // Hide loading state
+                                        $('#saveButton').prop('disabled', false);
+                                        $('.loading-spinner').hide();
+                                        $('#saveButton').text('Update Company');
+                            }
+                        });
+                }else{
+                    const formData = new FormData();
+                    formData.append('companyName', $('#companyName').val().trim());
+                    formData.append('subDomain', $('#subDomain').val().trim());
+                    formData.append('addressName', $('#addressName').val().trim());
+                    formData.append('city', $('#city').val().trim());
+                    formData.append('state', $('#state').val().trim());
+                    formData.append('country', $('#country').val().trim());
+                    formData.append('email', $('#email').val().trim());
+                    formData.append('phone', $('#phone').val().trim());
+                    formData.append('status', $('#status').val());
+                    formData.append('profilePic', profilePicFile);
+                    $('#editCompanyModal').modal('hide');
 
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
-                    }
-        },
-        complete: function() {
-                    // Hide loading state
-                    $('#saveButton').prop('disabled', false);
-                    $('.loading-spinner').hide();
-                    $('#saveButton').text('Update Company');
+                    $.ajax({
+                        url: '/api/editCompanyWithProfile',
+                        type: 'POST',
+                        processData: false,
+                        contentType: false,
+                        headers: {
+                            'Authorization': 'Bearer ' + getAccessToken()
+                        },
+                        data: formData,
+                        success: function (response) {
+                            const $successMsg = $('#successMessage');
+                                $successMsg.fadeIn(200);
+                                setTimeout(() => {
+                                    $successMsg.fadeOut(300, function () {
+                                        $('body').removeClass('no-scroll');
+                                        $successMsg.removeClass('show');
+                                    });
+                                    closeEditModal();
+                                    if (typeof loadCompanies === 'function') {
+                                        loadCompanies();
+                                    }
+                                }, 1500);
+                        },
+                        error: function (xhr) {
+                            console.error(xhr.responseText);
+                        },
+                        complete: function() {
+                                        // Hide loading state
+                                        $('#saveButton').prop('disabled', false);
+                                        $('.loading-spinner').hide();
+                                        $('#saveButton').text('Update Company');
+                         }
+                    });
+
                 }
-      });
+
+
      });
       $(document).on('click', function(e) {
             if (e.target.id === 'editCompanyModal') {
@@ -679,23 +733,34 @@
                         </div>
                     <div class="modal-body p-4">
                         <!-- Company Header -->
-                        <div class="company-header mb-4 p-3 bg-light rounded">
-                            <div class="row align-items-center">
-                                <div class="col-md-8">
-                                    <h6 class="text-primary mb-1">${company.companyName || 'N/A'}</h6>
-                                    <p class="text-muted mb-0 small">
-                                        <i class="fas fa-globe me-1"></i>
-                                        ${company.subDomain || 'N/A'}
-                                    </p>
-                                </div>
-                                <div class="col-md-4 text-end">
-                                    <span class="badge ${company.status === 'Active' ? 'bg-success' : company.status === 'Inactive' ? 'bg-danger' : 'bg-warning'} px-3 py-2">
-                                        <i class="fas fa-circle me-1" style="font-size: 0.7em;"></i>
-                                        ${company.status || 'N/A'}
-                                    </span>
-                                </div>
+                    <!-- Company Header with Profile Pic -->
+                    <div class="company-header mb-4 p-3 bg-light rounded">
+                        <div class="row align-items-center">
+                            <div class="col-md-2 text-center">
+                                ${company.profilePicURL ? `
+                                    <img src="${company.profilePicURL}" alt="Profile Pic" class="img-fluid rounded-circle shadow-sm" style="width: 70px; height: 70px; object-fit: cover;">
+                                ` : `
+                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-building text-white" style="font-size: 30px;"></i>
+                                    </div>
+                                `}
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-1">${company.companyName || 'N/A'}</h6>
+                                <p class="text-muted mb-0 small">
+                                    <i class="fas fa-globe me-1"></i>
+                                    ${company.subDomain || 'N/A'}
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <span class="badge ${company.status === 'Active' ? 'bg-success' : company.status === 'Inactive' ? 'bg-danger' : 'bg-warning'} px-3 py-2">
+                                    <i class="fas fa-circle me-1" style="font-size: 0.7em;"></i>
+                                    ${company.status || 'N/A'}
+                                </span>
                             </div>
                         </div>
+                    </div>
+
 
                         <!-- Company Details -->
                         <div class="row g-4">
@@ -807,10 +872,6 @@
                     <div class="modal-footer border-0 bg-light">
                         <div class="d-flex justify-content-between w-100">
                             <div class="btn-group">
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="editCompany('${company.id}')">
-                                    <i class="fas fa-edit me-1"></i>
-                                    Edit
-                                </button>
                                 <button type="button" class="btn btn-outline-success btn-sm" onclick="exportCompany('${company.id}')">
                                     <i class="fas fa-download me-1"></i>
                                     Export
