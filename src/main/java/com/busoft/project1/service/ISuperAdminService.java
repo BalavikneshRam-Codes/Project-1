@@ -6,4 +6,5 @@ public interface ISuperAdminService {
     BaseVo createCompany(BaseVo baseVo);
     BaseVo getAllCompanies(BaseVo baseVo);
     BaseVo deleteCompany(BaseVo baseVo);
+    BaseVo editCompany(BaseVo baseVo);
 }

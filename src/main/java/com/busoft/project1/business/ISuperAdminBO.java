@@ -8,4 +8,6 @@ public interface ISuperAdminBO {
     CompaniesVo getAllCompanies(CommonFilterVo commonFilterVo);
 
     BaseVo deleteCompany(CompanyVo baseVo);
+
+    BaseVo editCompany(CompanyVo baseVo);
 }

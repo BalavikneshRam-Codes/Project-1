@@ -386,6 +386,10 @@
         url: '/api/editCompany',
         type: 'POST',
         contentType: 'application/json',
+        headers: {
+                'Authorization': 'Bearer ' + getAccessToken(),
+                'Content-Type': 'application/json'
+          },
         data: JSON.stringify(formData),
         success: function (res) {
           $('#successMessage').show();

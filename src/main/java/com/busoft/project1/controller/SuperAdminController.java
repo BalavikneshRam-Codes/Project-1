@@ -53,4 +53,17 @@ public class SuperAdminController extends BaseController{
         }
         return BaseVo;
     }
+    @PostMapping("/editCompany")
+    public BaseVo editCompany(@RequestBody CompanyVo companyVo, HttpServletRequest servletRequest){
+        BaseVo BaseVo = null;
+        try{
+            BaseVo =(BaseVo) callingSuperAdminService(companyVo, servletRequest, "editCompany");
+            BaseVo.setStatus(StatusEnum.SUCCESS.getKey());
+        } catch (Exception e) {
+            BaseVo = new BaseVo();
+            BaseVo.setStatus(StatusEnum.FAILED.getKey());
+            BaseVo.setErrorMessage(e.getMessage());
+        }
+        return BaseVo;
+    }
 }

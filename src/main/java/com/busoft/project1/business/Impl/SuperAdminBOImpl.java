@@ -65,11 +65,27 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
         }
     }
 
+    @Override
+    public BaseVo editCompany(CompanyVo companyVo) {
+        BaseVo baseVo = new BaseVo();
+        try {
+            Company company_ = companyRepository.findFirstByCompanyName(companyVo.getCompanyName());
+            if(company_ != null) {
+                Company company = convertVoToEntity(companyVo);
+                company.setCompanyId(company_.getCompanyId());
+                company.setCreatedIn(company_.getCreatedIn());
+                companyRepository.save(company);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return baseVo;
+    }
+
     private Sort sortDirection(String direction, String sortBy) {
         if (sortBy == null || sortBy.trim().isEmpty()) {
             sortBy = "createdIn";
         }
-
         if (direction.equalsIgnoreCase("Desc"))
             return Sort.by(Sort.Direction.DESC, sortBy);
         else if (direction.equalsIgnoreCase("Asc"))

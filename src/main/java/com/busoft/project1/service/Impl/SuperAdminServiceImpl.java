@@ -26,4 +26,9 @@ public class SuperAdminServiceImpl implements ISuperAdminService {
     public BaseVo deleteCompany(BaseVo baseVo) {
         return (BaseVo) superAdminBO.deleteCompany((CompanyVo) baseVo);
     }
+
+    @Override
+    public BaseVo editCompany(BaseVo baseVo) {
+        return (BaseVo) superAdminBO.editCompany((CompanyVo) baseVo);
+    }
 }
