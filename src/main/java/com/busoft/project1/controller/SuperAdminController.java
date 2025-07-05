@@ -1,10 +1,7 @@
 package com.busoft.project1.controller;
 
 import com.busoft.project1.constant.StatusEnum;
-import com.busoft.project1.vo.CommonFilterVo;
-import com.busoft.project1.vo.CommonVo;
-import com.busoft.project1.vo.CompaniesVo;
-import com.busoft.project1.vo.CompanyVo;
+import com.busoft.project1.vo.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.*;
@@ -42,5 +39,18 @@ public class SuperAdminController extends BaseController{
             companyVos.setErrorMessage(e.getMessage());
         }
         return companyVos;
+    }
+    @PostMapping("/deleteCompany")
+    public BaseVo deleteCompany(@RequestBody CompanyVo companyVo, HttpServletRequest servletRequest){
+        BaseVo BaseVo = null;
+        try{
+            BaseVo =(BaseVo) callingSuperAdminService(companyVo, servletRequest, "deleteCompany");
+            BaseVo.setStatus(StatusEnum.SUCCESS.getKey());
+        } catch (Exception e) {
+            BaseVo = new BaseVo();
+            BaseVo.setStatus(StatusEnum.FAILED.getKey());
+            BaseVo.setErrorMessage(e.getMessage());
+        }
+        return BaseVo;
     }
 }

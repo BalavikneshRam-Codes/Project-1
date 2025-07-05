@@ -3,10 +3,7 @@ package com.busoft.project1.business.Impl;
 import com.busoft.project1.business.ISuperAdminBO;
 import com.busoft.project1.entity.Company;
 import com.busoft.project1.repo.ICompanyRepository;
-import com.busoft.project1.vo.CommonFilterVo;
-import com.busoft.project1.vo.CommonVo;
-import com.busoft.project1.vo.CompaniesVo;
-import com.busoft.project1.vo.CompanyVo;
+import com.busoft.project1.vo.*;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,26 +22,50 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
 
     @Override
     public CommonVo createCompany(CompanyVo companyVo) {
-        Company company = convertVoToEntity(companyVo);
-        companyRepository.save(company);
-        CommonVo commonVo = new CommonVo();
-        return commonVo;
+        try {
+            List<Company> subDomains = companyRepository.findBySubDomain(companyVo.getSubDomain());
+            if (subDomains.size() > 1)
+                throw new RuntimeException("Sub Domain already present");
+            List<Company> companies = companyRepository.findByCompanyName(companyVo.getCompanyName());
+            if (companies.size() > 1)
+                throw new RuntimeException("Company already present");
+            Company company = convertVoToEntity(companyVo);
+            companyRepository.save(company);
+            CommonVo commonVo = new CommonVo();
+            return commonVo;
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
     @Override
     public CompaniesVo getAllCompanies(CommonFilterVo commonFilterVo) {
         try {
-            Sort sort = sortDirection(commonFilterVo.getFilterVO().getDirection(),null);
+            Sort sort = sortDirection(commonFilterVo.getFilterVO().getDirection(), null);
             Pageable pageable = PageRequest.of(commonFilterVo.getFilterVO().getPageNumber(), commonFilterVo.getFilterVO().getPageSize(), sort);
             Page<Company> companies = companyRepository.findAll(pageable);
             return convertEntityToVoList(companies);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
     }
 
-    private Sort sortDirection(String direction,String sortBy) {
+    @Override
+    public BaseVo deleteCompany(CompanyVo baseVo) {
+        try {
+            Company company = companyRepository.findFirstByCompanyName(baseVo.getCompanyName());
+            if (company == null)
+                throw new RuntimeException("There is no Company ");
+            companyRepository.delete(company);
+            CommonVo commonVo = new CommonVo();
+            return commonVo;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Sort sortDirection(String direction, String sortBy) {
         if (sortBy == null || sortBy.trim().isEmpty()) {
             sortBy = "createdIn";
         }

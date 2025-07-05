@@ -112,17 +112,14 @@
                  const paginationControls = $('#paginationControls');
                  const paginationInfo = $('#paginationInfo');
 
-                 // Update pagination info
-                  let startRecord = 0;
-let endRecord = 0;
+                let startRecord = 0;
+                let endRecord = 0;
 
-if (totalRecords > 0) {
-    startRecord = (currentPage * pageSize) + 1;
-    endRecord = Math.min((currentPage + 1) * pageSize, totalRecords);
-}
-
-paginationInfo.text(`Showing ${startRecord} - ${endRecord} of ${totalRecords} companies`);
-
+                if (totalRecords > 0) {
+                startRecord = (currentPage * pageSize) + 1;
+                endRecord = Math.min((currentPage + 1) * pageSize, totalRecords);
+                paginationInfo.text(`Showing ${startRecord} - ${endRecord} of ${totalRecords} companies`);
+            }
 
                  // Generate pagination buttons
                  let html = '';
@@ -621,15 +618,18 @@ paginationInfo.text(`Showing ${startRecord} - ${endRecord} of ${totalRecords} co
             $('.toast-container').remove();
         }, 7000);
      }
-     function deleteCompanyAPI(companyName) {
+     function confirmDeleteCompany(companyName) {
         $('#deleteConfirmationModal').modal('hide');
 
         showLoadingIndicator();
-
         $.ajax({
             url: 'api/deleteCompany',
             type: 'POST',
             contentType: 'application/json',
+            headers: {
+                'Authorization': 'Bearer ' + getAccessToken(),
+                'Content-Type': 'application/json'
+            },
             data: JSON.stringify({
                 companyName: companyName
             }),
