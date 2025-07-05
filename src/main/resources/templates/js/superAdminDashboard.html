@@ -189,10 +189,8 @@
      }
 
       function createCompanyCard(company) {
-        // Determine status badge class and text
         const statusClass = company.status === 'ACTIVE' ? 'bg-success' : 'bg-danger';
         const statusText = company.status || 'Unknown';
-        // Format address
         const fullAddress = [
             company.addressName,
             company.city,
@@ -243,7 +241,6 @@
                         ` : ''}
                         <div class="d-flex gap-2">
 
-                        <!--'${escapeHtml(company.companyName)}'-->
                             <button class="btn btn-outline-primary btn-sm" onclick="editCompany(getCompanyFromCard(this))">
                                 <i class="fas fa-edit"></i>
                             </button>

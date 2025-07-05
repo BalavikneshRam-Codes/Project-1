@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SuperAdminServiceImpl implements ISuperAdminService {
     @Autowired
     private ISuperAdminBO superAdminBO;
+
     @Override
     @Transactional
     public BaseVo createCompany(BaseVo baseVo) {
