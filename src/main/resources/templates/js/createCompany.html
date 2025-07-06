@@ -153,41 +153,94 @@
           const accessToken = $('#accessToken').val();
 
 
-          const ajaxSettings = {
-              url: '/api/createCompany',
-              method: 'POST',
-              contentType: 'application/json',
-               headers: {
-                  'Authorization': 'Bearer ' + accessToken
-              },
-              data: JSON.stringify(formData),
-              success: function(result) {
-                  showAlert('Company created successfully!', 'success');
+          const profilePicFile = document.getElementById('profilePic').files[0];
+          if (!profilePicFile) {
+                        $.ajax({
+                            url: '/api/createCompany',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            headers: {
+                                'Authorization': 'Bearer ' + getAccessToken()
+                            },
+                            data: JSON.stringify(formData),
+                           success: function (response) {
+                            if (response.status === 'SUCCESS') {
+                                showAlert('Company created successfully!', 'success');
+                                setTimeout(function() {
+                                    window.location.href = '/superAdminDashboard';
+                                }, 2000);
+                              }else{
+                                let errorMessage = 'Failed to create company. Please try again.';
 
-                  // Optional: Redirect after success
-                  setTimeout(function() {
-                      window.location.href = '/superAdminDashboard';
-                  }, 2000);
-              },
-              error: function(xhr, status, error) {
-                  let errorMessage = 'Failed to create company. Please try again.';
+                                if (response.errorMessage) {
+                                    errorMessage = response.errorMessage;
+                                } else if (xhr.status === 0) {
+                                    errorMessage = 'Network error. Please check your connection and try again.';
+                                }
+                                $loadingSpan.hide();
+                                $submitSpan.show();
+                                $submitButton.prop('disabled', false);
+                                showAlert(errorMessage,'failed');
+                              }
+                            },
+                            error: function(xhr, status, error) {
+                                let errorMessage = 'Failed to create company. Please try again.';
 
-                  if (xhr.responseJSON && xhr.responseJSON.message) {
-                      errorMessage = xhr.responseJSON.message;
-                  } else if (xhr.status === 0) {
-                      errorMessage = 'Network error. Please check your connection and try again.';
-                  }
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                } else if (xhr.status === 0) {
+                                    errorMessage = 'Network error. Please check your connection and try again.';
+                            }
+                        }});
+                }else{
+                    const formData = new FormData();
+                    formData.append('companyName', $('#companyName').val().trim());
+                    formData.append('subDomain', $('#subDomain').val().trim());
+                    formData.append('addressName', $('#addressName').val().trim());
+                    formData.append('city', $('#city').val().trim());
+                    formData.append('state', $('#state').val().trim());
+                    formData.append('country', $('#country').val().trim());
+                    formData.append('email', $('#email').val().trim());
+                    formData.append('phone', $('#phone').val().trim());
+                    formData.append('status', $('#status').val());
+                    formData.append('profilePic', profilePicFile);
+                    $('#editCompanyModal').modal('hide');
 
-                  showAlert(errorMessage, 'error');
-              },
-              complete: function() {
-                  // Hide loading state
-                  $loadingSpan.hide();
-                  $submitSpan.show();
-                  $submitButton.prop('disabled', false);
-              }
-          };
-          $.ajax(ajaxSettings);
+                    $.ajax({
+                        url: '/api/createCompanyWithProfile',
+                        type: 'POST',
+                        processData: false,
+                        contentType: false,
+                        headers: {
+                            'Authorization': 'Bearer ' + getAccessToken()
+                        },
+                        data: formData,
+                        success: function (response) {
+                            const $successMsg = $('#successMessage');
+                                $successMsg.fadeIn(200);
+                                setTimeout(() => {
+                                    $successMsg.fadeOut(300, function () {
+                                        $('body').removeClass('no-scroll');
+                                        $successMsg.removeClass('show');
+                                    });
+                                    closeEditModal();
+                                    if (typeof loadCompanies === 'function') {
+                                        loadCompanies();
+                                    }
+                                }, 1500);
+                        },
+                        error: function (xhr) {
+                            console.error(xhr.responseText);
+                        },
+                        complete: function() {
+                                        // Hide loading state
+                                        $('#saveButton').prop('disabled', false);
+                                        $('.loading-spinner').hide();
+                                        $('#saveButton').text('Update Company');
+                         }
+                    });
+
+                }
       }
 
 

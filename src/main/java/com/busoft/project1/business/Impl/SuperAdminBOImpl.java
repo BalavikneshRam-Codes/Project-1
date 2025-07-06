@@ -32,9 +32,9 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
     public CommonVo createCompany(CompanyVo companyVo) {
         try {
             List<Company> subDomains = companyRepository.findBySubDomain(companyVo.getSubDomain());
-            if (subDomains.size() > 1) throw new RuntimeException("Sub Domain already present");
+            if (subDomains.size() > 0) throw new RuntimeException("Sub Domain already present");
             List<Company> companies = companyRepository.findByCompanyName(companyVo.getCompanyName());
-            if (companies.size() > 1) throw new RuntimeException("Company already present");
+            if (companies.size() > 0) throw new RuntimeException("Company already present");
             Company company = convertVoToEntity(companyVo);
             companyRepository.save(company);
             CommonVo commonVo = new CommonVo();
