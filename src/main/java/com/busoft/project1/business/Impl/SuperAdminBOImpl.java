@@ -7,19 +7,14 @@ import com.busoft.project1.repo.ICompanyRepository;
 import com.busoft.project1.vo.*;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 public class SuperAdminBOImpl implements ISuperAdminBO {
@@ -32,9 +27,9 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
     public CommonVo createCompany(CompanyVo companyVo) {
         try {
             List<Company> subDomains = companyRepository.findBySubDomain(companyVo.getSubDomain());
-            if (subDomains.size() > 0) throw new RuntimeException("Sub Domain already present");
+            if (!subDomains.isEmpty()) throw new RuntimeException("Sub Domain already present");
             List<Company> companies = companyRepository.findByCompanyName(companyVo.getCompanyName());
-            if (companies.size() > 0) throw new RuntimeException("Company already present");
+            if (!companies.isEmpty()) throw new RuntimeException("Company already present");
             Company company = convertVoToEntity(companyVo);
             companyRepository.save(company);
             CommonVo commonVo = new CommonVo();
@@ -112,9 +107,9 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
     public CommonVo createCompanyWithProfile(CompanyVo companyVo) {
         try {
             List<Company> subDomains = companyRepository.findBySubDomain(companyVo.getSubDomain());
-            if (subDomains.size() > 0) throw new RuntimeException("Sub Domain already present");
+            if (!subDomains.isEmpty()) throw new RuntimeException("Sub Domain already present");
             List<Company> companies = companyRepository.findByCompanyName(companyVo.getCompanyName());
-            if (companies.size() > 0) throw new RuntimeException("Company already present");
+            if (!companies.isEmpty()) throw new RuntimeException("Company already present");
             Company company = convertVoToEntity(companyVo);
             String key = null;
             if(companyVo.getProfilePic() != null){
