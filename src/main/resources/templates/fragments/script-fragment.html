@@ -38,6 +38,24 @@
     function getAccessToken() {
         return $('#accessToken').val();
     }
+    function showAlert(message, type = 'success') {
+          const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+          const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+          const alertHtml = `
+              <div class="alert ${alertClass} alert-dismissible fade show" role="alert" id="autoDismissAlert">
+                  <i class="fas ${iconClass} me-2"></i>
+                  ${message}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+          `;
+          $('#alertContainer').html(alertHtml);
+
+          // Auto-dismiss after 3 seconds
+          setTimeout(() => {
+              $('#autoDismissAlert').alert('close');
+          }, 3000);
+      }
 
     function getRefreshToken() {
         return $('#refreshToken').val();
