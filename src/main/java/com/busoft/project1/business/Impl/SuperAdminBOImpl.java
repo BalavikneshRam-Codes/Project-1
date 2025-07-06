@@ -26,20 +26,15 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
     @Autowired
     private ICompanyRepository companyRepository;
     @Autowired
-    private S3Client s3Client;
-    @Autowired
-    private Environment env;
-    @Autowired
     private AwsHelper awsHelper;
+
     @Override
     public CommonVo createCompany(CompanyVo companyVo) {
         try {
             List<Company> subDomains = companyRepository.findBySubDomain(companyVo.getSubDomain());
-            if (subDomains.size() > 1)
-                throw new RuntimeException("Sub Domain already present");
+            if (subDomains.size() > 1) throw new RuntimeException("Sub Domain already present");
             List<Company> companies = companyRepository.findByCompanyName(companyVo.getCompanyName());
-            if (companies.size() > 1)
-                throw new RuntimeException("Company already present");
+            if (companies.size() > 1) throw new RuntimeException("Company already present");
             Company company = convertVoToEntity(companyVo);
             companyRepository.save(company);
             CommonVo commonVo = new CommonVo();
@@ -66,8 +61,8 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
     public BaseVo deleteCompany(CompanyVo baseVo) {
         try {
             Company company = companyRepository.findFirstByCompanyName(baseVo.getCompanyName());
-            if (company == null)
-                throw new RuntimeException("There is no Company ");
+            if (company == null) throw new RuntimeException("There is no Company ");
+            if (StringUtils.isNotEmpty(company.getProfilePic())) awsHelper.deleteImage(company.getProfilePic());
             companyRepository.delete(company);
             CommonVo commonVo = new CommonVo();
             return commonVo;
@@ -81,7 +76,7 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
         BaseVo baseVo = new BaseVo();
         try {
             Company company_ = companyRepository.findFirstByCompanyName(companyVo.getCompanyName());
-            if(company_ != null) {
+            if (company_ != null) {
                 Company company = convertVoToEntity(companyVo);
                 company.setCompanyId(company_.getCompanyId());
                 company.setCreatedIn(company_.getCreatedIn());
@@ -95,10 +90,10 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
 
     @Override
     public BaseVo editCompanyWithProfile(CompanyVo companyVo) {
-        try{
-            if(companyVo.getProfilePic() != null) {
+        try {
+            if (companyVo.getProfilePic() != null) {
                 Company company_ = companyRepository.findFirstByCompanyName(companyVo.getCompanyName());
-                if(company_ != null) {
+                if (company_ != null) {
                     Company company = convertVoToEntity(companyVo);
                     company.setCompanyId(company_.getCompanyId());
                     company.setCreatedIn(company_.getCreatedIn());
@@ -118,11 +113,9 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
         if (sortBy == null || sortBy.trim().isEmpty()) {
             sortBy = "createdIn";
         }
-        if(direction != null) {
-            if (direction.equalsIgnoreCase("Desc"))
-                return Sort.by(Sort.Direction.DESC, sortBy);
-            else if (direction.equalsIgnoreCase("Asc"))
-                return Sort.by(Sort.Direction.ASC, sortBy);
+        if (direction != null) {
+            if (direction.equalsIgnoreCase("Desc")) return Sort.by(Sort.Direction.DESC, sortBy);
+            else if (direction.equalsIgnoreCase("Asc")) return Sort.by(Sort.Direction.ASC, sortBy);
         }
         return Sort.by(Sort.Direction.DESC, sortBy);
     }
@@ -150,10 +143,9 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
         companyVo.setPhone(company.getPhone());
         companyVo.setSubDomain(company.getSubDomain());
         companyVo.setStatus(company.getStatus());
-        if(StringUtils.isNotEmpty(company.getProfilePic())) {
+        if (StringUtils.isNotEmpty(company.getProfilePic())) {
             String preSignedUrl = awsHelper.generatePresignedUrl(company.getProfilePic());
-            if (StringUtils.isNotEmpty(preSignedUrl))
-                companyVo.setProfilePicURL(preSignedUrl);
+            if (StringUtils.isNotEmpty(preSignedUrl)) companyVo.setProfilePicURL(preSignedUrl);
         }
         return companyVo;
     }
