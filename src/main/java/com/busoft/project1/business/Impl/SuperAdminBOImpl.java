@@ -97,13 +97,33 @@ public class SuperAdminBOImpl implements ISuperAdminBO {
                     Company company = convertVoToEntity(companyVo);
                     company.setCompanyId(company_.getCompanyId());
                     company.setCreatedIn(company_.getCreatedIn());
-                    String key = "company-profiles/" + UUID.randomUUID() + "_" + companyVo.getProfilePic().getOriginalFilename();
-                    awsHelper.uploadImage(key, companyVo.getProfilePic());
+                    String key = awsHelper.uploadImage(companyVo.getProfilePic());
                     company.setProfilePic(key);
                     companyRepository.save(company);
                 }
             }
             return null;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public CommonVo createCompanyWithProfile(CompanyVo companyVo) {
+        try {
+            List<Company> subDomains = companyRepository.findBySubDomain(companyVo.getSubDomain());
+            if (subDomains.size() > 0) throw new RuntimeException("Sub Domain already present");
+            List<Company> companies = companyRepository.findByCompanyName(companyVo.getCompanyName());
+            if (companies.size() > 0) throw new RuntimeException("Company already present");
+            Company company = convertVoToEntity(companyVo);
+            String key = null;
+            if(companyVo.getProfilePic() != null){
+                key =  awsHelper.uploadImage(companyVo.getProfilePic());
+            }
+            company.setProfilePic(key);
+            companyRepository.save(company);
+            CommonVo commonVo = new CommonVo();
+            return commonVo;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

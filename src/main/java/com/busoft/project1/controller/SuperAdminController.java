@@ -72,18 +72,22 @@ public class SuperAdminController extends BaseController{
     public BaseVo editCompanyWithProfile(MultipartHttpServletRequest request, HttpServletRequest servletRequest){
         BaseVo baseVo = null;
         try{
-            CompanyVo companyVo = new CompanyVo();
-            companyVo.setCompanyName(request.getParameter("companyName"));
-            companyVo.setSubDomain(request.getParameter("subDomain"));
-            companyVo.setAddressName(request.getParameter("addressName"));
-            companyVo.setCity(request.getParameter("city"));
-            companyVo.setState(request.getParameter("state"));
-            companyVo.setCountry(request.getParameter("country"));
-            companyVo.setEmail(request.getParameter("email"));
-            companyVo.setPhone(request.getParameter("phone"));
-            companyVo.setStatus(request.getParameter("status"));
-            companyVo.setProfilePic(request.getFile("profilePic"));
+            CompanyVo companyVo = getCompanyVoFromMultiPart(request);
             baseVo =(BaseVo) callingSuperAdminService(companyVo, servletRequest, "editCompanyWithProfile");
+            baseVo.setStatus(StatusEnum.SUCCESS.getKey());
+        } catch (Exception e) {
+            baseVo = new BaseVo();
+            baseVo.setStatus(StatusEnum.FAILED.getKey());
+            baseVo.setErrorMessage(e.getMessage());
+        }
+        return baseVo;
+    }
+    @PostMapping("/createCompanyWithProfile")
+    public BaseVo createCompanyWithProfile(MultipartHttpServletRequest request, HttpServletRequest servletRequest){
+        BaseVo baseVo = null;
+        try{
+            CompanyVo companyVo = getCompanyVoFromMultiPart(request);
+            baseVo =(BaseVo) callingSuperAdminService(companyVo, servletRequest, "createCompanyWithProfile");
             baseVo.setStatus(StatusEnum.SUCCESS.getKey());
         } catch (Exception e) {
             baseVo = new BaseVo();

@@ -3,9 +3,11 @@ package com.busoft.project1.controller;
 import com.busoft.project1.service.ISuperAdminService;
 import com.busoft.project1.service.IUserService;
 import com.busoft.project1.vo.BaseVo;
+import com.busoft.project1.vo.CompanyVo;
 import com.busoft.project1.vo.LoginResponseVo;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -51,5 +53,19 @@ public class BaseController {
     public void setLoginUserSession(LoginResponseVo userSessionVo, HttpServletRequest request){
         request.getSession().setAttribute("ACCESS_TOKEN",userSessionVo.getAccessToken());
         request.getSession().setAttribute("REFRESH_TOKEN",userSessionVo.getRefreshToken());
+    }
+    public CompanyVo getCompanyVoFromMultiPart(MultipartHttpServletRequest request){
+        CompanyVo companyVo = new CompanyVo();
+        companyVo.setCompanyName(request.getParameter("companyName"));
+        companyVo.setSubDomain(request.getParameter("subDomain"));
+        companyVo.setAddressName(request.getParameter("addressName"));
+        companyVo.setCity(request.getParameter("city"));
+        companyVo.setState(request.getParameter("state"));
+        companyVo.setCountry(request.getParameter("country"));
+        companyVo.setEmail(request.getParameter("email"));
+        companyVo.setPhone(request.getParameter("phone"));
+        companyVo.setStatus(request.getParameter("status"));
+        companyVo.setProfilePic(request.getFile("profilePic"));
+        return companyVo;
     }
 }

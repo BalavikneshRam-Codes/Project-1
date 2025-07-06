@@ -16,6 +16,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 import java.time.Duration;
+import java.util.UUID;
 
 @Component
 public class AwsHelper {
@@ -45,8 +46,10 @@ public class AwsHelper {
             throw new RuntimeException(e);
         }
     }
-    public void uploadImage(String key, MultipartFile file) {
+    public String uploadImage(MultipartFile file) {
         try {
+            String key = "company-profiles/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
+
             PutObjectRequest putRequest = PutObjectRequest.builder()
                     .bucket(env.getProperty("aws.s3.bucketName"))
                     .key(key)
@@ -54,6 +57,7 @@ public class AwsHelper {
                     .build();
 
             s3Client.putObject(putRequest, RequestBody.fromBytes(file.getBytes()));
+            return key;
         } catch (Exception e) {
             logger.info("Exception is upload Image in s3 {}", e.getMessage());
             throw new RuntimeException(e);

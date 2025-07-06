@@ -8,4 +8,5 @@ public interface ISuperAdminService {
     BaseVo deleteCompany(BaseVo baseVo);
     BaseVo editCompany(BaseVo baseVo);
     BaseVo editCompanyWithProfile(BaseVo baseVo);
+    BaseVo createCompanyWithProfile(BaseVo baseVo);
 }

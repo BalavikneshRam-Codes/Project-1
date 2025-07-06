@@ -37,4 +37,9 @@ public class SuperAdminServiceImpl implements ISuperAdminService {
     public BaseVo editCompanyWithProfile(BaseVo baseVo) {
         return (BaseVo) superAdminBO.editCompanyWithProfile((CompanyVo) baseVo);
     }
+
+    @Override
+    public BaseVo createCompanyWithProfile(BaseVo baseVo) {
+       return  (BaseVo) superAdminBO.createCompanyWithProfile((CompanyVo) baseVo);
+    }
 }

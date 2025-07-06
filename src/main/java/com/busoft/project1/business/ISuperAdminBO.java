@@ -12,4 +12,6 @@ public interface ISuperAdminBO {
     BaseVo editCompany(CompanyVo baseVo);
 
     BaseVo editCompanyWithProfile(CompanyVo baseVo);
+
+    CommonVo createCompanyWithProfile(CompanyVo baseVo);
 }
