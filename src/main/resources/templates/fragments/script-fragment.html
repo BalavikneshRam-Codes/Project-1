@@ -73,18 +73,8 @@ function callApi(params) {
             url: params.url,
             type: params.method || 'GET',
             headers: params.headers || {},
-            success: function (response) {
-                if (typeof params.successCallback === 'function') {
-                    params.successCallback(response);
-                }
-            },
-            error: function (xhr, status, error) {
-                if (typeof params.errorCallback === 'function') {
-                    params.errorCallback(xhr, status, error);
-                } else {
-                    console.error("API Error:", error);
-                }
-            }
+            success: params.successHandler,
+            error: params.errorHandler
         };
 
         // Inject the access token into the headers

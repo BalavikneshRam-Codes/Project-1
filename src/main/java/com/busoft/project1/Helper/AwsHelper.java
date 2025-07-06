@@ -34,7 +34,7 @@ public class AwsHelper {
                     .build();
 
             GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                    .signatureDuration(Duration.ofMinutes(15)) // URL valid for 15 mins
+                    .signatureDuration(Duration.ofMinutes(15))
                     .getObjectRequest(getObjectRequest)
                     .build();
 

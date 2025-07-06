@@ -24,7 +24,6 @@
      });
 
      function loadCompanies() {
-        const accessToken = $('#accessToken').val();
         const statusFilter = $('#statusFilter').val();
         const searchQuery = $('#searchInput').val().trim();
 
@@ -47,18 +46,34 @@
         if (searchQuery && searchQuery.length > 0) {
             requestData.companyName = searchQuery;
         }
-                 $('#loadingIndicator').show();
-                 $('#companyTableContainer').hide();
-        $.ajax({
-            url: '/api/getAllCompanies',
-            type: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + accessToken,
-                'Content-Type': 'application/json'
-            },
-            contentType: 'application/json',
-            data: JSON.stringify(requestData),
-            success: function(response) {
+         $('#loadingIndicator').show();
+         $('#companyTableContainer').hide();
+        var params = {}
+        params.url='/api/getAllCompanies'
+        params.method='POST'
+        params.data=requestData
+        params.header={
+            'Authorization': 'Bearer ' + getAccessToken()
+        }
+        params.successHandler=getAllCompaniesSuccessHandler,
+        params.errorHandler=getAllCompaniesErrorHandler
+        callApi(params)
+     }
+     function getAllCompaniesErrorHandler(xhr, status, error) {
+                $('#loadingSpinner').hide();
+                let errorMessage = 'Failed to load companies';
+
+                if (xhr.status === 401) {
+                    errorMessage = 'Unauthorized. Please check your authentication token.';
+                } else if (xhr.status === 404) {
+                    errorMessage = 'API endpoint not found.';
+                } else if (xhr.responseJSON && xhr.responseJSON.errorMessage) {
+                    errorMessage = xhr.responseJSON.errorMessage;
+                }
+
+                showError(errorMessage);
+            }
+     function getAllCompaniesSuccessHandler (response) {
                 $('#loadingSpinner').hide();
                  $('#loadingIndicator').hide();
                  $('#companyTableContainer').show();
@@ -74,23 +89,7 @@
                 } else {
                     showError(response.errorMessage || 'Failed to load companies');
                 }
-            },
-            error: function(xhr, status, error) {
-                $('#loadingSpinner').hide();
-                let errorMessage = 'Failed to load companies';
-
-                if (xhr.status === 401) {
-                    errorMessage = 'Unauthorized. Please check your authentication token.';
-                } else if (xhr.status === 404) {
-                    errorMessage = 'API endpoint not found.';
-                } else if (xhr.responseJSON && xhr.responseJSON.errorMessage) {
-                    errorMessage = xhr.responseJSON.errorMessage;
-                }
-
-                showError(errorMessage);
             }
-        });
-     }
      function goToPage(page) {
             if (page < 1 || page > totalPages || page === currentPage) {
                 return;
